@@ -21,7 +21,7 @@
 #  along with this program; if not,  If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
-import ElParsito_dev as ep
+import ElParsito3 as ep
 
 
 ##### ARGUMENT LIST ######
@@ -77,7 +77,7 @@ def main_parser(alignment_list):
 	elif arg.Conversion != None and arg.outfile != None:
 		output_file = "".join(arg.outfile)
 	elif arg.Conversion != None and arg.outfile == None:
-		if input_format == output_format:
+		if input_format in output_format:
 			output_file = "".join(alignment_list).split(".")[0]+"_conv"
 		else:
 			output_file = "".join(alignment_list).split(".")[0]

@@ -23,9 +23,36 @@
 #  
 
 class SeqUtils ():
+	
+	def check_format (self,input_alignment,alignment_format):
+		""" This function performs some very basic checks to see if the format of the input file is in accordance to the input file format specified when the script is executed """
+		input_handle = open(input_alignment)
+		line = input_handle.readline()
+		while line.strip() == "":
+			line = next(input_handle)
+		
+		if alignment_format == "fasta":
+			if line.strip()[0] != ">":
+				print ("File not in Fasta format. First non-empty line of the input file %s does not start with '>'. Please verify the file, or the input format settings\nExiting..." % input_alignment)
+				raise SystemExit
+		elif alignment_format == "nexus":
+			if line.strip().lower() != "#nexus":
+				print ("File not in Nexus format. First non-empty line of the input file %s does not start with '#NEXUS'. Please verify the file, or the input format settings\nExiting..." % input_alignment)
+				raise SystemExit
+		elif alignment_format == "phylip":
+			try:
+				header = line.strip().split()
+				float(header[0])
+				float(header[1])
+			except:
+				print ("File not in correct Phylip format. First non-empty line of the input file %s does not start with two intergers separated by whitespace. Please verify the file, or the input format settings\nExiting..." % input_alignment)
+				raise SystemExit
+
 
 	def read_alignment (self, input_alignment, alignment_format):
 		""" ONLY FOR SINGLE FILE/LOCI INPUT: Function that parses an input file alignment and returns a dictionary with the taxa as keys and sequences as values """ 
+		
+		self.check_format (input_alignment, alignment_format)
 		
 		def rm_illegal (string):
 			""" Function that removes illegal characters from taxa names """
@@ -35,7 +62,7 @@ class SeqUtils ():
 				print ("\nWARNING: Removed illegal characters from the taxa %s" % string)
 			return clean_name
 
-		self.alignment_storage = {} # Save the taxa and their respective sequences
+		alignment_storage = {} # Save the taxa and their respective sequences
 		self.taxa_order = [] # Save taxa names to maintain initial order
 		file_handle = open(input_alignment)
 		
@@ -49,7 +76,7 @@ class SeqUtils ():
 					taxa = rm_illegal(taxa)
 					self.taxa_order.append(taxa)
 					sequence = line.split()[1].strip()
-					self.alignment_storage[taxa] = sequence
+					alignment_storage[taxa] = sequence
 			
 		# PARSING FASTA FORMAT
 		elif alignment_format == "fasta":
@@ -58,10 +85,10 @@ class SeqUtils ():
 					taxa = line[1:].strip().replace(" ","_")
 					taxa = rm_illegal(taxa)
 					self.taxa_order.append(taxa)
-					self.alignment_storage[taxa] = ""
+					alignment_storage[taxa] = ""
 				else:
-					self.alignment_storage[taxa] += line.strip()
-			self.loci_lengths = [len(list(self.alignment_storage.values())[0])]
+					alignment_storage[taxa] += line.strip()
+			self.loci_lengths = [len(list(alignment_storage.values())[0])]
 			
 		# PARSING NEXUS FORMAT
 		elif alignment_format == "nexus":
@@ -75,15 +102,15 @@ class SeqUtils ():
 					taxa = line.strip().split()[0].replace(" ","")
 					taxa = rm_illegal(taxa)
 					self.taxa_order.append(taxa)
-					if taxa in self.alignment_storage: # This accomodates for the interleave format
-						self.alignment_storage[taxa] += "".join(line.strip().split()[1:])
+					if taxa in alignment_storage: # This accomodates for the interleave format
+						alignment_storage[taxa] += "".join(line.strip().split()[1:])
 					else:
-						self.alignment_storage[taxa] = "".join(line.strip().split()[1:])
-			self.loci_lengths = [len(list(self.alignment_storage.values())[0])]
+						alignment_storage[taxa] = "".join(line.strip().split()[1:])
+			self.loci_lengths = [len(list(alignment_storage.values())[0])]
 			
 		self.loci_range = self.loci_lengths
-		self.check_sizes (self.alignment_storage, input_alignment)
-		return (self.alignment_storage, self.taxa_order, self.loci_lengths, self.loci_range)
+		self.check_sizes (alignment_storage, input_alignment)
+		return (alignment_storage, self.taxa_order, self.loci_lengths, self.loci_range)
 		
 	def read_alignments (self, input_list, alignment_format):
 		""" Function that parses multiple alignment/loci files and returns a dictionary with the taxa as keys and sequences as values as well as two integers corresponding to the number of taxa and sequence length """
