@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-# ElConcatenero v3.0.0-1
+# ElConcatenero v3.0.0-2
 # Author: Diogo N Silva
 # Last update: 15/10/2012
 # ElConcatenero is tool to convert and concatenate several commonly used data format types. Currently, supported input formats include Nexus, FastA and Phylip. Output may be in Nexus, Phylip (wiht part file for RaXML) or FastA. Please type "ElConcatenero -h" or read the README.md file for information on usage.
@@ -37,11 +37,9 @@ parser.add_argument("-z",dest="zorro",action="store_const",const=True,help="Use 
 parser.add_argument("-zfile",dest="zorro_infile",nargs="*",default="_zorro.out",help="Please provide the sufix for the concatenated zorro file (default is '%(default)s')")
 parser.add_argument("-in",dest="infile",nargs="+",required=True,help="Provide the input file name. If multiple files are provided, plase separated the names with spaces")
 parser.add_argument("-code",dest="coding",default="DNA",choices=["DNA","Protein"],help="The coding of your molecular sequences")
+parser.add_argument("-rm",dest="remove",nargs="*",help="Removes the specified taxa from the final alignment. Multiple taxa mais be specified and separated by whitespace")
 
 arg = parser.parse_args()
-
-# If you wish to include a whitespace (tab) between loci, set the variable to "yes", ortherwise "no".
-tab_delimited_loci = "no"
 
 ##### MAIN FUNCTIONS ######
 
@@ -71,6 +69,13 @@ def main_parser(alignment_list):
 			zorro_code = arg.zorro_infile
 			zorro_weigths = main_instance.zorro2rax(alignment_list,zorro_code)
 	
+	# Removes specified taxa, if the option was declared. Otherwise, continue with the original alignment
+	if arg.remove != None:
+		alignment_dic, taxa_order = main_instance.rm_taxa(alignment_storage[0],arg.remove)
+	else:
+		alignment_dic = alignment_storage[0]
+		taxa_order = alignment_storage[1]
+	
 	# Defining output file name
 	if arg.Conversion == None and arg.outfile != None:
 		output_file = "".join(arg.outfile)
@@ -83,15 +88,15 @@ def main_parser(alignment_list):
 			output_file = "".join(alignment_list).split(".")[0]
 		
 	# Creating main output instance
-	output_instance = main_instance.writer(output_file, alignment_storage[1], coding, alignment_storage[2], alignment_storage[3])
+	output_instance = main_instance.writer(output_file, taxa_order, coding, alignment_storage[2], alignment_storage[3])
 	
 	# Creating output file(s)
 	if "fasta" in output_format:
-		output_instance.fasta(alignment_storage[0],conversion)
+		output_instance.fasta(alignment_dic,conversion)
 	if "phylip" in output_format:
-		output_instance.phylip(alignment_storage[0],conversion)
+		output_instance.phylip(alignment_dic,conversion)
 	if "nexus" in output_format:
-		output_instance.nexus(alignment_storage[0],conversion)
+		output_instance.nexus(alignment_dic,conversion)
 	if arg.zorro != None:
 		output_instance.zorro(zorro_weigths)
 		
@@ -99,9 +104,9 @@ def main_check ():
 	if arg.Conversion == None and arg.outfile == None:
 		print ("ArgumentError: If you wish to concatenate provide the output file name using the '-o' option. If you wish to convert a file, specify it using the '-c' option\nExiting...")
 		raise SystemExit
-	#~ if arg.Conversion != None and len(arg.infile) > 1:
-		#~ print ("ArgumentError: Cannot convert multiple files implicitly. To convert multiple files independently use bash\nExample: for i in `ls`; do ElConcatenero [options]; done\nExiting...")
-		#~ raise SystemExit
+	if len(arg.infile) == 1 and arg.Conversion == None:
+		print ("ArgumentError: Cannot perform concatenation of a single file. Please provide additional files to concatenate, or specify the conversion '-c' option.\nExiting...")
+		raise SystemExit
 	if arg.zorro != None and len(arg.infile) == 1:
 		print ("ArgumentError: The '-z' option cannot be invoked when only a single input file is provided. This option is reserved for concatenation of multiple alignment files\nExiting...")
 		raise SystemExit

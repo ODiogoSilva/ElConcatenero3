@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-#  ElParsito.py v3.0.0-2
+#  ElParsito.py v3.0.0-3
 #
 #  
 #  Copyright 2012 Unknown <diogo@arch>
@@ -48,7 +48,16 @@ class SeqUtils ():
 			except:
 				print ("File not in correct Phylip format. First non-empty line of the input file %s does not start with two intergers separated by whitespace. Please verify the file, or the input format settings\nExiting..." % input_alignment)
 				raise SystemExit
-
+				
+	def rm_taxa (self, alignment_dic, taxa_list):
+		""" Function that removes specified taxa from the alignment """
+		alignment_mod = {}
+		self.taxa_order = []
+		for taxa, sequence in alignment_dic.items():
+			if taxa not in taxa_list:
+				alignment_mod[taxa] = sequence
+				self.taxa_order.append(taxa)
+		return alignment_mod, self.taxa_order
 
 	def read_alignment (self, input_alignment, alignment_format):
 		""" ONLY FOR SINGLE FILE/LOCI INPUT: Function that parses an input file alignment and returns a dictionary with the taxa as keys and sequences as values """ 
@@ -177,7 +186,7 @@ class SeqUtils ():
 			self.cut_space_nex = 20
 			self.cut_space_phy = 50
 			self.cut_space_ima2 = 8
-	
+				
 		def phylip (self, alignment_dic, conversion=None):
 			""" Writes a pre-parsed alignment dictionary into a new phylip file """
 			out_file = open(self.output_file+".phy","w")
@@ -206,6 +215,7 @@ class SeqUtils ():
 			out_file.write(";\n\tend;")
 			if conversion == None:
 				out_file.write("\nbegin mrbayes;\n")
+				print (self.loci_range)
 				for partition,lrange in self.loci_range:
 					out_file.write("\tcharset %s = %s;\n" % (partition,lrange))
 				out_file.write("\tpartition part = %s: %s;\nend;" % (len(self.loci_range),"".join([part[0] for part in self.loci_range])))
