@@ -38,6 +38,8 @@ parser.add_argument("-zfile",dest="zorro_infile",nargs="*",default="_zorro.out",
 parser.add_argument("-in",dest="infile",nargs="+",required=True,help="Provide the input file name. If multiple files are provided, plase separated the names with spaces")
 parser.add_argument("-code",dest="coding",default="DNA",choices=["DNA","Protein"],help="The coding of your molecular sequences")
 parser.add_argument("-rm",dest="remove",nargs="*",help="Removes the specified taxa from the final alignment. Multiple taxa mais be specified and separated by whitespace")
+parser.add_argument("--pickle-taxa",dest="pickle",nargs="*", choices=["dump","load"],help="dump option: Only output a picke object with the taxa names of the input alignment; load option: loads the taxa names from a pickle object to be incorporated in the output alignment")
+parser.add_argument("--check",dest="check",action="store_const",const=True,help="Provides a final check for the lengths of the alignment sequences")
 
 arg = parser.parse_args()
 
@@ -57,7 +59,7 @@ def main_parser(alignment_list):
 
 		
 	# Creating main instance of the parser
-	main_instance = ep.SeqUtils ()
+	main_instance = ep.SeqUtils (missing)
 	
 	# Parsing input file(s)
 	if len(alignment_list) == 1:
@@ -76,6 +78,15 @@ def main_parser(alignment_list):
 		alignment_dic = alignment_storage[0]
 		taxa_order = alignment_storage[1]
 	
+	# If the --pickle-taxa option is used, this code executes both loading and dumping operations
+	if arg.pickle != None:
+		main_instance.pickle_taxa(alignment_dic,"".join(arg.pickle))
+		alignment_dic, taxa_order = main_instance.import_taxa(alignment_dic)
+		
+	# Final consistency check of sequence lengths
+	if arg.check != None:
+		main_instance.check_sizes( alignment_dic, "Concatenated")
+				
 	# Defining output file name
 	if arg.Conversion == None and arg.outfile != None:
 		output_file = "".join(arg.outfile)
@@ -86,7 +97,7 @@ def main_parser(alignment_list):
 			output_file = "".join(alignment_list).split(".")[0]+"_conv"
 		else:
 			output_file = "".join(alignment_list).split(".")[0]
-		
+					
 	# Creating main output instance
 	output_instance = main_instance.writer(output_file, taxa_order, coding, alignment_storage[2], alignment_storage[3])
 	
@@ -101,10 +112,10 @@ def main_parser(alignment_list):
 		output_instance.zorro(zorro_weigths)
 		
 def main_check ():
-	if arg.Conversion == None and arg.outfile == None:
+	if arg.Conversion == None and arg.outfile == None and arg.pickle == []:
 		print ("ArgumentError: If you wish to concatenate provide the output file name using the '-o' option. If you wish to convert a file, specify it using the '-c' option\nExiting...")
 		raise SystemExit
-	if len(arg.infile) == 1 and arg.Conversion == None:
+	if len(arg.infile) == 1 and arg.Conversion == None and arg.pickle == []:
 		print ("ArgumentError: Cannot perform concatenation of a single file. Please provide additional files to concatenate, or specify the conversion '-c' option.\nExiting...")
 		raise SystemExit
 	if arg.zorro != None and len(arg.infile) == 1:
@@ -115,7 +126,7 @@ def main():
 	main_check()
 	if arg.Conversion != None and len(arg.infile) > 1:
 		for infile in arg.infile:
-			main_parser([infile])
+			main_parser([infile])		
 	else:
 		main_parser(arg.infile)
 

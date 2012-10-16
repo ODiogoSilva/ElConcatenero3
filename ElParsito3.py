@@ -24,6 +24,8 @@
 #  
 
 class SeqUtils ():
+	def __init__ (self, missing):
+		self.missing = missing
 	
 	def check_format (self,input_alignment,alignment_format):
 		""" This function performs some very basic checks to see if the format of the input file is in accordance to the input file format specified when the script is executed """
@@ -52,12 +54,33 @@ class SeqUtils ():
 	def rm_taxa (self, alignment_dic, taxa_list):
 		""" Function that removes specified taxa from the alignment """
 		alignment_mod = {}
-		self.taxa_order = []
+
 		for taxa, sequence in alignment_dic.items():
 			if taxa not in taxa_list:
 				alignment_mod[taxa] = sequence
 				self.taxa_order.append(taxa)
 		return alignment_mod, self.taxa_order
+	
+	def pickle_taxa (self, alignment_dic, mode):
+		""" Function that exports the list of taxa from an alignment """
+		import pickle
+		self.taxa_list = []
+		if mode == "dump":
+			self.taxa_list = [taxa for taxa in alignment_dic.keys()]
+			pickle.dump(self.taxa_list, open("taxa_list","wb"))
+			print ("Taxa names have been saved in the pickle file 'taxa_list'\nExiting...")
+			raise SystemExit
+		elif mode == "load":
+			self.taxa_list = pickle.load(open("taxa_list","rb"))
+		return self.taxa_list
+		
+	def import_taxa (self, alignment_dic):
+		""" Function that imports new taxa. It mainly exists to complete single locus aligments with taxa that are not present in the current alignment but occur in other alignments """
+		alignment_len = self.loci_lengths[0]
+		for taxa in self.taxa_list:
+			if taxa not in alignment_dic:
+				alignment_dic[taxa] = self.missing*alignment_len
+		return alignment_dic, self.taxa_list
 
 	def read_alignment (self, input_alignment, alignment_format):
 		""" ONLY FOR SINGLE FILE/LOCI INPUT: Function that parses an input file alignment and returns a dictionary with the taxa as keys and sequences as values """ 
@@ -122,12 +145,14 @@ class SeqUtils ():
 		self.check_sizes (alignment_storage, input_alignment)
 		return (alignment_storage, self.taxa_order, self.loci_lengths, self.loci_range)
 		
-	def read_alignments (self, input_list, alignment_format):
+	def read_alignments (self, input_list, alignment_format, progress_stat=True):
 		""" Function that parses multiple alignment/loci files and returns a dictionary with the taxa as keys and sequences as values as well as two integers corresponding to the number of taxa and sequence length """
 		loci_lengths = [] # Saves the sequence lengths of the 
 		loci_range = [] # Saves the loci names as keys and their range as values
 		self.main_taxa_order = []
 		for infile in input_list:
+			if progress_stat == True: # When set to True, this statement produces a progress status on the terminal
+				print ("\rProcessing file %s out of %s" % (input_list.index(infile)+1,len(input_list)),end="")
 			current_alignment, taxa_order, current_sequence_len, loci_range_temp = self.read_alignment(infile,alignment_format) # Parse the current alignment
 			current_sequence_len = "".join("%s" % x for x in current_sequence_len) # Due to technical reasons that increase code homogeneity, the "current_sequence_len" is a list by default. Therefore, for this particular function, I need to convert it to a string
 			if loci_lengths == []:
@@ -140,13 +165,13 @@ class SeqUtils ():
 					if taxa in main_alignment: 
 						main_alignment[taxa] += sequence # Append the sequence from the current alignment to the respective taxa in the main alignment
 					elif taxa not in main_alignment:
-						main_alignment[taxa] = "n"*sum(loci_lengths)+sequence # If the taxa does not yet exist in the main alignment, create the new entry with a sequence of 'n' characters of the same size as the length of the missed loci and the sequence from the current alignment
+						main_alignment[taxa] = self.missing*sum(loci_lengths)+sequence # If the taxa does not yet exist in the main alignment, create the new entry with a sequence of 'n' characters of the same size as the length of the missed loci and the sequence from the current alignment
 						self.main_taxa_order.append(taxa)
 				loci_range.append((infile.split(".")[0],"%s-%s" % (loci_lengths[-1], int(current_sequence_len)-1))) # Saving the range for the subsequent loci
 				loci_lengths.append(int(current_sequence_len))
-				for taxa in main_alignment:
+				for taxa in main_alignment.keys():
 					if taxa not in current_alignment: # Check if any taxa from the main alignment are missing from the current alignment. If yes, fill them with 'n'
-						main_alignment[taxa] = "n"*int(current_sequence_len)
+						main_alignment[taxa] += self.missing*int(current_sequence_len)
 		self.main_taxa_order = self.taxa_order
 		return (main_alignment, self.taxa_order, loci_lengths, loci_range)
 		
@@ -179,11 +204,11 @@ class SeqUtils ():
 			self.gap = gap
 			self.missing = missing
 			# The space (in characters) available for the taxon name before the sequence begins
-			self.seq_space_nex = 20
+			self.seq_space_nex = 40
 			self.seq_space_phy = 30
 			self.seq_space_ima2 = 10
 			# Cut the taxa names by the following character:
-			self.cut_space_nex = 20
+			self.cut_space_nex = 50
 			self.cut_space_phy = 50
 			self.cut_space_ima2 = 8
 				
@@ -210,12 +235,12 @@ class SeqUtils ():
 			""" Writes a pre-parsed alignment dictionary into a new nexus file """
 			out_file = open(self.output_file+".nex","w")
 			out_file.write("#NEXUS\n\nBegin data;\n\tdimensions ntax=%s nchar=%s ;\n\tformat datatype=%s interleave=no gap=%s missing=%s ;\n\tmatrix\n" % (len(alignment_dic), sum(self.loci_lengths), self.coding, self.gap, self.missing))
+			print (alignment_dic["Mycosphaerella_fijiensis"])
 			for key in self.taxa_order:
 				out_file.write("%s %s\n" % (key[:self.cut_space_nex].ljust(self.seq_space_nex),alignment_dic[key]))
 			out_file.write(";\n\tend;")
 			if conversion == None:
 				out_file.write("\nbegin mrbayes;\n")
-				print (self.loci_range)
 				for partition,lrange in self.loci_range:
 					out_file.write("\tcharset %s = %s;\n" % (partition,lrange))
 				out_file.write("\tpartition part = %s: %s;\nend;" % (len(self.loci_range),"".join([part[0] for part in self.loci_range])))
