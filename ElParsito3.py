@@ -235,7 +235,6 @@ class SeqUtils ():
 			""" Writes a pre-parsed alignment dictionary into a new nexus file """
 			out_file = open(self.output_file+".nex","w")
 			out_file.write("#NEXUS\n\nBegin data;\n\tdimensions ntax=%s nchar=%s ;\n\tformat datatype=%s interleave=no gap=%s missing=%s ;\n\tmatrix\n" % (len(alignment_dic), sum(self.loci_lengths), self.coding, self.gap, self.missing))
-			print (alignment_dic["Mycosphaerella_fijiensis"])
 			for key in self.taxa_order:
 				out_file.write("%s %s\n" % (key[:self.cut_space_nex].ljust(self.seq_space_nex),alignment_dic[key]))
 			out_file.write(";\n\tend;")
