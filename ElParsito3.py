@@ -54,12 +54,12 @@ class SeqUtils ():
 	def rm_taxa (self, alignment_dic, taxa_list):
 		""" Function that removes specified taxa from the alignment """
 		alignment_mod = {}
-
+		taxa_order = []
 		for taxa, sequence in alignment_dic.items():
 			if taxa not in taxa_list:
 				alignment_mod[taxa] = sequence
-				self.taxa_order.append(taxa)
-		return alignment_mod, self.taxa_order
+				taxa_order.append(taxa)
+		return alignment_mod, taxa_order
 	
 	def pickle_taxa (self, alignment_dic, mode):
 		""" Function that exports the list of taxa from an alignment """
@@ -159,7 +159,7 @@ class SeqUtils ():
 				main_alignment = current_alignment # Create the main alignment dictionary from the first current alignment and never visit this statement again
 				self.main_taxa_order = taxa_order
 				loci_lengths.append(int(current_sequence_len))
-				loci_range.append((infile.split(".")[0],"1-%s" % (int(current_sequence_len)-1))) # Saving the range for the first loci
+				loci_range.append((infile.split(".")[0],"1-%s" % (int(current_sequence_len)))) # Saving the range for the first loci
 			else:
 				for taxa, sequence in current_alignment.items(): 
 					if taxa in main_alignment: 
@@ -167,7 +167,7 @@ class SeqUtils ():
 					elif taxa not in main_alignment:
 						main_alignment[taxa] = self.missing*sum(loci_lengths)+sequence # If the taxa does not yet exist in the main alignment, create the new entry with a sequence of 'n' characters of the same size as the length of the missed loci and the sequence from the current alignment
 						self.main_taxa_order.append(taxa)
-				loci_range.append((infile.split(".")[0],"%s-%s" % (loci_lengths[-1], int(current_sequence_len)-1))) # Saving the range for the subsequent loci
+				loci_range.append((infile.split(".")[0],"%s-%s" % (sum(loci_lengths)+1, sum(loci_lengths)+int(current_sequence_len)))) # Saving the range for the subsequent loci
 				loci_lengths.append(int(current_sequence_len))
 				for taxa in main_alignment.keys():
 					if taxa not in current_alignment: # Check if any taxa from the main alignment are missing from the current alignment. If yes, fill them with 'n'
@@ -182,7 +182,7 @@ class SeqUtils ():
 		# Creates a dictionary with the sequences, and respective length, of different length
 		difLength = dict((key,value) for key, value in alignment_dic.items() if len(commonSeq) != len(value))
 		if difLength != {}:
-			print ("\nWARNING: Unequal sequence lenght detected in %s for the following taxa" % i_file)
+			print ("\nWARNING: Unequal sequence lenght detected in %s for the following taxa" % current_file)
 			
 	def zorro2rax (self, alignment_file_list, zorro_sufix="_zorro.out"):
 		""" Function that converts the floating point numbers contained in the original zorro output files into intergers that can be interpreted by RAxML. If multiple alignment files are provided, it also concatenates them in the same order """
@@ -242,7 +242,7 @@ class SeqUtils ():
 				out_file.write("\nbegin mrbayes;\n")
 				for partition,lrange in self.loci_range:
 					out_file.write("\tcharset %s = %s;\n" % (partition,lrange))
-				out_file.write("\tpartition part = %s: %s;\nend;" % (len(self.loci_range),"".join([part[0] for part in self.loci_range])))
+				out_file.write("\tpartition part = %s: %s;\n\tset partition=part;\nend;" % (len(self.loci_range),", ".join([part[0] for part in self.loci_range])))
 			out_file.close()
 				
 		def zorro (self, zorro_weigths):

@@ -50,7 +50,7 @@ def main_parser(alignment_list):
 	
 	# Defining main variables
 	gap = arg.gap
-	missing = arg.missing
+	missing_sym = arg.missing
 	coding = arg.coding
 	conversion = arg.Conversion
 	input_format = arg.InputFormat
@@ -59,7 +59,7 @@ def main_parser(alignment_list):
 
 		
 	# Creating main instance of the parser
-	main_instance = ep.SeqUtils (missing)
+	main_instance = ep.SeqUtils (missing_sym)
 	
 	# Parsing input file(s)
 	if len(alignment_list) == 1:
@@ -99,7 +99,7 @@ def main_parser(alignment_list):
 			output_file = "".join(alignment_list).split(".")[0]
 					
 	# Creating main output instance
-	output_instance = main_instance.writer(output_file, taxa_order, coding, alignment_storage[2], alignment_storage[3])
+	output_instance = main_instance.writer(output_file, taxa_order, coding, alignment_storage[2], alignment_storage[3],missing=missing_sym)
 	
 	# Creating output file(s)
 	if "fasta" in output_format:
