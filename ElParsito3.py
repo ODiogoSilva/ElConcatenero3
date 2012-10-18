@@ -96,7 +96,7 @@ class SeqUtils ():
 			return clean_name
 
 		alignment_storage = {} # Save the taxa and their respective sequences
-		self.taxa_order = [] # Save taxa names to maintain initial order
+		taxa_order = [] # Save taxa names to maintain initial order
 		file_handle = open(input_alignment)
 		
 		# PARSING PHYLIP FORMAT
@@ -107,7 +107,7 @@ class SeqUtils ():
 				if line != "":
 					taxa = line.split()[0].replace(" ","")
 					taxa = rm_illegal(taxa)
-					self.taxa_order.append(taxa)
+					taxa_order.append(taxa)
 					sequence = line.split()[1].strip()
 					alignment_storage[taxa] = sequence
 			
@@ -117,7 +117,7 @@ class SeqUtils ():
 				if line.strip().startswith(">"):
 					taxa = line[1:].strip().replace(" ","_")
 					taxa = rm_illegal(taxa)
-					self.taxa_order.append(taxa)
+					taxa_order.append(taxa)
 					alignment_storage[taxa] = ""
 				else:
 					alignment_storage[taxa] += line.strip()
@@ -134,7 +134,7 @@ class SeqUtils ():
 				elif line != "" and counter == 1: # Start parsing here
 					taxa = line.strip().split()[0].replace(" ","")
 					taxa = rm_illegal(taxa)
-					self.taxa_order.append(taxa)
+					taxa_order.append(taxa)
 					if taxa in alignment_storage: # This accomodates for the interleave format
 						alignment_storage[taxa] += "".join(line.strip().split()[1:])
 					else:
@@ -142,14 +142,14 @@ class SeqUtils ():
 			self.loci_lengths = [len(list(alignment_storage.values())[0])]
 			
 		self.loci_range = self.loci_lengths
-		self.check_sizes (alignment_storage, input_alignment)
-		return (alignment_storage, self.taxa_order, self.loci_lengths, self.loci_range)
+		#self.check_sizes (alignment_storage, input_alignment)
+		return (alignment_storage, taxa_order, self.loci_lengths, self.loci_range)
 		
 	def read_alignments (self, input_list, alignment_format, progress_stat=True):
 		""" Function that parses multiple alignment/loci files and returns a dictionary with the taxa as keys and sequences as values as well as two integers corresponding to the number of taxa and sequence length """
 		loci_lengths = [] # Saves the sequence lengths of the 
 		loci_range = [] # Saves the loci names as keys and their range as values
-		self.main_taxa_order = []
+		main_taxa_order = []
 		for infile in input_list:
 			if progress_stat == True: # When set to True, this statement produces a progress status on the terminal
 				print ("\rProcessing file %s out of %s" % (input_list.index(infile)+1,len(input_list)),end="")
@@ -157,7 +157,7 @@ class SeqUtils ():
 			current_sequence_len = "".join("%s" % x for x in current_sequence_len) # Due to technical reasons that increase code homogeneity, the "current_sequence_len" is a list by default. Therefore, for this particular function, I need to convert it to a string
 			if loci_lengths == []:
 				main_alignment = current_alignment # Create the main alignment dictionary from the first current alignment and never visit this statement again
-				self.main_taxa_order = taxa_order
+				main_taxa_order = taxa_order
 				loci_lengths.append(int(current_sequence_len))
 				loci_range.append((infile.split(".")[0],"1-%s" % (int(current_sequence_len)))) # Saving the range for the first loci
 			else:
@@ -166,14 +166,13 @@ class SeqUtils ():
 						main_alignment[taxa] += sequence # Append the sequence from the current alignment to the respective taxa in the main alignment
 					elif taxa not in main_alignment:
 						main_alignment[taxa] = self.missing*sum(loci_lengths)+sequence # If the taxa does not yet exist in the main alignment, create the new entry with a sequence of 'n' characters of the same size as the length of the missed loci and the sequence from the current alignment
-						self.main_taxa_order.append(taxa)
+						main_taxa_order.append(taxa)
 				loci_range.append((infile.split(".")[0],"%s-%s" % (sum(loci_lengths)+1, sum(loci_lengths)+int(current_sequence_len)))) # Saving the range for the subsequent loci
 				loci_lengths.append(int(current_sequence_len))
 				for taxa in main_alignment.keys():
 					if taxa not in current_alignment: # Check if any taxa from the main alignment are missing from the current alignment. If yes, fill them with 'n'
 						main_alignment[taxa] += self.missing*int(current_sequence_len)
-		self.main_taxa_order = self.taxa_order
-		return (main_alignment, self.taxa_order, loci_lengths, loci_range)
+		return (main_alignment, main_taxa_order, loci_lengths, loci_range)
 		
 	def check_sizes (self, alignment_dic, current_file):
 		""" Function to test whether all sequences are of the same size and, if not, which are different """
@@ -190,8 +189,8 @@ class SeqUtils ():
 		for alignment_file in alignment_file_list:
 			zorro_file = alignment_file.split(".")[0]+zorro_sufix # This assumes that the prefix of the alignment file is shared with the corresponding zorro file
 			zorro_handle = open(zorro_file)
-			weigths_storage += [round(float(weigth.strip())) for weigth in zorro_hanlde]
-		return zorro_storage
+			weigths_storage += [round(float(weigth.strip())) for weigth in zorro_handle]
+		return weigths_storage
 	
 	class writer ():
 			
@@ -248,6 +247,7 @@ class SeqUtils ():
 		def zorro (self, zorro_weigths):
 			""" Creates a concatenated file with the zorro weigths for the corresponding alignment files """
 			outfile = self.output_file+"_zorro.out"
+			outfile_handle = open(outfile,"w")
 			for weigth in zorro_weigths:
-				outfile.write("%s\n" % weigth)
-			outfile.close()
+				outfile_handle.write("%s\n" % weigth)
+			outfile_handle.close()

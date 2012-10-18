@@ -77,6 +77,7 @@ def main_parser(alignment_list):
 	else:
 		alignment_dic = alignment_storage[0]
 		taxa_order = alignment_storage[1]
+
 	
 	# If the --pickle-taxa option is used, this code executes both loading and dumping operations
 	if arg.pickle != None:
@@ -112,10 +113,10 @@ def main_parser(alignment_list):
 		output_instance.zorro(zorro_weigths)
 		
 def main_check ():
-	if arg.Conversion == None and arg.outfile == None and arg.pickle == []:
+	if arg.Conversion == None and arg.outfile == None and arg.pickle == None:
 		print ("ArgumentError: If you wish to concatenate provide the output file name using the '-o' option. If you wish to convert a file, specify it using the '-c' option\nExiting...")
 		raise SystemExit
-	if len(arg.infile) == 1 and arg.Conversion == None and arg.pickle == []:
+	if len(arg.infile) == 1 and arg.Conversion == None and arg.pickle == None:
 		print ("ArgumentError: Cannot perform concatenation of a single file. Please provide additional files to concatenate, or specify the conversion '-c' option.\nExiting...")
 		raise SystemExit
 	if arg.zorro != None and len(arg.infile) == 1:
