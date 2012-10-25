@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 
-# ElConcatenero v3.0.0-2
+# ElConcatenero v3.0.1
 # Author: Diogo N Silva
-# Last update: 15/10/2012
+# Last update: 25/10/2012
 # ElConcatenero is tool to convert and concatenate several commonly used data format types. Currently, supported input formats include Nexus, FastA and Phylip. Output may be in Nexus, Phylip (wiht part file for RaXML) or FastA. Please type "ElConcatenero -h" or read the README.md file for information on usage.
 
 #  Copyright 2012 Diogo N Silva <diogo@arch>
@@ -100,7 +100,7 @@ def main_parser(alignment_list):
 			output_file = "".join(alignment_list).split(".")[0]
 					
 	# Creating main output instance
-	output_instance = main_instance.writer(output_file, taxa_order, coding, alignment_storage[2], alignment_storage[3],missing=missing_sym)
+	output_instance = ep.writer(output_file, taxa_order, coding, alignment_storage[2], alignment_storage[3],missing=missing_sym)
 	
 	# Creating output file(s)
 	if "fasta" in output_format:

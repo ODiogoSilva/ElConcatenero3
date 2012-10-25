@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-#  ElParsito.py v3.0.0-3
+#  ElParsito.py v3.0.0-5
 #
 #  
 #  Copyright 2012 Unknown <diogo@arch>
@@ -37,12 +37,12 @@ class SeqUtils ():
 			print ("\nWARNING: Removed illegal characters from the taxa %s" % string)
 		return clean_name
 		
-	def duplicate_taxa (self, taxa_list, input_file):
+	def duplicate_taxa (self, taxa_list):
 		""" Function that identifies duplicated taxa """
 		import collections
 		duplicated_taxa = [x for x, y in collections.Counter(taxa_list).items() if y > 1]
-		print ("WARNING: Duplicated taxa have been found in file %s (%s). Please correct this problem and re-run the program\n" %(input_file,", ".join(duplicated_taxa)))
-		raise SystemExit
+		return duplicated_taxa
+
 	
 	def check_format (self,input_alignment,alignment_format):
 		""" This function performs some very basic checks to see if the format of the input file is in accordance to the input file format specified when the script is executed """
@@ -174,7 +174,9 @@ class SeqUtils ():
 		
 		# Checks for duplicate taxa
 		if len(taxa_order) != len(set(taxa_order)):
-			self.duplicate_taxa(taxa_order,input_alignment)
+			taxa = self.duplicate_taxa(taxa_order)
+			print ("WARNING: Duplicated taxa have been found in file %s (%s). Please correct this problem and re-run the program\n" %(input_file,", ".join(duplicated_taxa)))
+			raise SystemExit
 		
 		return (alignment_storage, taxa_order, self.loci_lengths)
 		
@@ -219,65 +221,63 @@ class SeqUtils ():
 						main_alignment[taxa] += self.missing*current_sequence_len
 						
 		return (main_alignment, main_taxa_order, loci_lengths, loci_range)
-		
-
 	
-	class writer ():
+class writer ():
+		
+	def __init__ (self, output_file, taxa_order, coding, loci_lengths, loci_range, gap = "-", missing = "n", conversion = None):
+		self.output_file = output_file
+		self.taxa_order = taxa_order
+		self.coding = coding
+		self.loci_lengths = loci_lengths
+		self.loci_range = loci_range
+		self.gap = gap
+		self.missing = missing
+		# The space (in characters) available for the taxon name before the sequence begins
+		self.seq_space_nex = 40
+		self.seq_space_phy = 30
+		self.seq_space_ima2 = 10
+		# Cut the taxa names by the following character:
+		self.cut_space_nex = 50
+		self.cut_space_phy = 50
+		self.cut_space_ima2 = 8
 			
-		def __init__ (self, output_file, taxa_order, coding, loci_lengths, loci_range, gap = "-", missing = "n", conversion = None):
-			self.output_file = output_file
-			self.taxa_order = taxa_order
-			self.coding = coding
-			self.loci_lengths = loci_lengths
-			self.loci_range = loci_range
-			self.gap = gap
-			self.missing = missing
-			# The space (in characters) available for the taxon name before the sequence begins
-			self.seq_space_nex = 40
-			self.seq_space_phy = 30
-			self.seq_space_ima2 = 10
-			# Cut the taxa names by the following character:
-			self.cut_space_nex = 50
-			self.cut_space_phy = 50
-			self.cut_space_ima2 = 8
+	def phylip (self, alignment_dic, conversion=None):
+		""" Writes a pre-parsed alignment dictionary into a new phylip file """
+		out_file = open(self.output_file+".phy","w")
+		out_file.write("%s %s\n" % (len(alignment_dic), sum(self.loci_lengths)))
+		for key in self.taxa_order:
+				out_file.write("%s %s\n" % (key[:self.cut_space_phy].ljust(self.seq_space_phy),alignment_dic[key]))
+		if conversion == None:
+			partition_file = open(self.output_file+"_part.File","a")
+			for partition,lrange in self.loci_range:
+				partition_file.write("%s, %s = %s\n" % (self.coding,partition,lrange))
+		out_file.close()
 				
-		def phylip (self, alignment_dic, conversion=None):
-			""" Writes a pre-parsed alignment dictionary into a new phylip file """
-			out_file = open(self.output_file+".phy","w")
-			out_file.write("%s %s\n" % (len(alignment_dic), sum(self.loci_lengths)))
-			for key in self.taxa_order:
-					out_file.write("%s %s\n" % (key[:self.cut_space_phy].ljust(self.seq_space_phy),alignment_dic[key]))
-			if conversion == None:
-				partition_file = open(self.output_file+"_part.File","a")
-				for partition,lrange in self.loci_range:
-					partition_file.write("%s, %s = %s\n" % (self.coding,partition,lrange))
-			out_file.close()
-					
-		def fasta (self, alignment_dic, conversion=None):
-			""" Writes a pre-parsed alignment dictionary into a new fasta file """
-			out_file = open(self.output_file+".fas","w")
-			for key in self.taxa_order:
-				out_file.write(">%s\n%s\n" % (key,alignment_dic[key]))
-			out_file.close()
-				
-		def nexus (self, alignment_dic, conversion=None):
-			""" Writes a pre-parsed alignment dictionary into a new nexus file """
-			out_file = open(self.output_file+".nex","w")
-			out_file.write("#NEXUS\n\nBegin data;\n\tdimensions ntax=%s nchar=%s ;\n\tformat datatype=%s interleave=no gap=%s missing=%s ;\n\tmatrix\n" % (len(alignment_dic), sum(self.loci_lengths), self.coding, self.gap, self.missing))
-			for key in self.taxa_order:
-				out_file.write("%s %s\n" % (key[:self.cut_space_nex].ljust(self.seq_space_nex),alignment_dic[key]))
-			out_file.write(";\n\tend;")
-			if conversion == None:
-				out_file.write("\nbegin mrbayes;\n")
-				for partition,lrange in self.loci_range:
-					out_file.write("\tcharset %s = %s;\n" % (partition,lrange))
-				out_file.write("\tpartition part = %s: %s;\n\tset partition=part;\nend;" % (len(self.loci_range),", ".join([part[0] for part in self.loci_range])))
-			out_file.close()
-				
-		def zorro (self, zorro_weigths):
-			""" Creates a concatenated file with the zorro weigths for the corresponding alignment files """
-			outfile = self.output_file+"_zorro.out"
-			outfile_handle = open(outfile,"w")
-			for weigth in zorro_weigths:
-				outfile_handle.write("%s\n" % weigth)
-			outfile_handle.close()
+	def fasta (self, alignment_dic, conversion=None):
+		""" Writes a pre-parsed alignment dictionary into a new fasta file """
+		out_file = open(self.output_file+".fas","w")
+		for key in self.taxa_order:
+			out_file.write(">%s\n%s\n" % (key,alignment_dic[key]))
+		out_file.close()
+			
+	def nexus (self, alignment_dic, conversion=None):
+		""" Writes a pre-parsed alignment dictionary into a new nexus file """
+		out_file = open(self.output_file+".nex","w")
+		out_file.write("#NEXUS\n\nBegin data;\n\tdimensions ntax=%s nchar=%s ;\n\tformat datatype=%s interleave=no gap=%s missing=%s ;\n\tmatrix\n" % (len(alignment_dic), sum(self.loci_lengths), self.coding, self.gap, self.missing))
+		for key in self.taxa_order:
+			out_file.write("%s %s\n" % (key[:self.cut_space_nex].ljust(self.seq_space_nex),alignment_dic[key]))
+		out_file.write(";\n\tend;")
+		if conversion == None:
+			out_file.write("\nbegin mrbayes;\n")
+			for partition,lrange in self.loci_range:
+				out_file.write("\tcharset %s = %s;\n" % (partition,lrange))
+			out_file.write("\tpartition part = %s: %s;\n\tset partition=part;\nend;" % (len(self.loci_range),", ".join([part[0] for part in self.loci_range])))
+		out_file.close()
+			
+	def zorro (self, zorro_weigths):
+		""" Creates a concatenated file with the zorro weigths for the corresponding alignment files """
+		outfile = self.output_file+"_zorro.out"
+		outfile_handle = open(outfile,"w")
+		for weigth in zorro_weigths:
+			outfile_handle.write("%s\n" % weigth)
+		outfile_handle.close()
