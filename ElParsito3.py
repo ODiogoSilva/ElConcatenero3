@@ -178,7 +178,7 @@ class SeqUtils ():
 			print ("WARNING: Duplicated taxa have been found in file %s (%s). Please correct this problem and re-run the program\n" %(input_file,", ".join(duplicated_taxa)))
 			raise SystemExit
 		
-		return (alignment_storage, taxa_order, self.loci_lengths)
+		return (alignment_storage, taxa_order, self.loci_lengths, None)
 		
 	def read_alignments (self, input_list, alignment_format, progress_stat=True):
 		""" Function that parses multiple alignment/loci files and returns a dictionary with the taxa as keys and sequences as values as well as two integers corresponding to the number of taxa and sequence length """
@@ -224,7 +224,7 @@ class SeqUtils ():
 	
 class writer ():
 		
-	def __init__ (self, output_file, taxa_order, coding, loci_lengths, loci_range, gap = "-", missing = "n", conversion = None):
+	def __init__ (self, output_file, taxa_order, coding, loci_lengths, loci_range=None, gap = "-", missing = "n", conversion = None):
 		self.output_file = output_file
 		self.taxa_order = taxa_order
 		self.coding = coding
@@ -263,7 +263,7 @@ class writer ():
 	def nexus (self, alignment_dic, conversion=None):
 		""" Writes a pre-parsed alignment dictionary into a new nexus file """
 		out_file = open(self.output_file+".nex","w")
-		out_file.write("#NEXUS\n\nBegin data;\n\tdimensions ntax=%s nchar=%s ;\n\tformat datatype=%s interleave=no gap=%s missing=%s ;\n\tmatrix\n" % (len(alignment_dic), sum(self.loci_lengths), self.coding, self.gap, self.missing))
+		out_file.write("#NEXUS\n\nBegin data;\n\tdimensions ntax=%s nchar=%s ;\n\tformat datatype=%s interleave=no gap=%s missing=%s ;\n\tmatrix\n" % (len(alignment_dic), self.loci_lengths, self.coding, self.gap, self.missing))
 		for key in self.taxa_order:
 			out_file.write("%s %s\n" % (key[:self.cut_space_nex].ljust(self.seq_space_nex),alignment_dic[key]))
 		out_file.write(";\n\tend;")

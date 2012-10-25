@@ -77,9 +77,9 @@ def main_parser(alignment_list):
 	else:
 		alignment_dic = alignment_storage[0]
 		taxa_order = alignment_storage[1]
-
 	
 	# If the --pickle-taxa option is used, this code executes both loading and dumping operations
+	# They can only be used separately, though.
 	if arg.pickle != None:
 		main_instance.pickle_taxa(alignment_dic,"".join(arg.pickle))
 		alignment_dic, taxa_order = main_instance.import_taxa(alignment_dic)
