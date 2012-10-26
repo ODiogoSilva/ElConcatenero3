@@ -31,26 +31,26 @@ class SeqUtils ():
 
     def rm_illegal(self,name):
     """ Removes any 'illegal' charaters from the taxas' names. """
-    chars = set(" ",":",",",")","(",";","[","]","'")
-    newname = []
-    for i in name:
-        if i in chars:
-            newname.append("_")
-        else:
-            newname.append(i)
-    newname = "".join(newname)
-    if newname != name:
-    #Suggestion - the module should not print any messeges. These should be
-    #returned to the main program and let it handle them.
-        print ("\nWARNING: Replaced illegal characters from the taxa %s" % name)
-    return newname
+        warning = ""
+        chars = set(" ",":",",",")","(",";","[","]","'")
+        newname = []
+        for i in name:
+            if i in chars:
+                newname.append("_")
+            else:
+                newname.append(i)
+        newname = "".join(newname)
+        if newname != name:
+        #Suggestion - the module should not print any messeges. These should be
+        #returned to the main program and let it handle them.
+            warning = "WARNING: Replaced illegal characters from the taxa %s" % name
+        return newname, warning
 
     def duplicate_taxa (self, taxa_list):
         """ Function that identifies repeats in taxa names """
-        #TODO: Falar com o Diogo!
         from collections import Counter
         duplicated_taxa = [x for x, y in Counter(taxa_list).items() if y > 1]
-        return duplicated_taxa #Returns the name of the repeated taxa
+        return duplicated_taxa #Returns a list with the names of repeated taxa
 
     def check_format (self,input_alignment,alignment_format):
         """ This function performs some very basic checks to see if the format
@@ -77,6 +77,32 @@ class SeqUtils ():
             except:
                 print ("File not in correct Phylip format. First non-empty line of the input file %s does not start with two intergers separated by whitespace. Please verify the file, or the input format settings\nExiting..." % input_alignment)
                 raise SystemExit
+
+    def filetype(infile_name):
+        #Detects the type of file to be parsed
+        autofind = "unknown"
+        infile = open(infile_name,'r')
+        header = infile.readline()
+        while header.startswith("\n"):
+            header = infile.readline()
+        phy_header = header.strip().split()
+        if header.upper().startswith("#NEXUS"):
+            autofind = "nexus"
+            return autofind
+        elif len(phy_header) == 2 and phy_header[0].isdigit():
+            autofind = "phylip"
+            return autofind
+        elif header.startswith(">"):
+            autofind = "fasta"
+            return autofind
+        elif header.startswith("\n"):
+            header = infile.readline()
+            if header.startswith(">"):
+                autofind = "fasta"
+                return autofind
+
+        infile.close()
+        return autofind
 
     def rm_taxa (self, alignment_dic, taxa_list):
         """ Function that removes specified taxa from the alignment """
