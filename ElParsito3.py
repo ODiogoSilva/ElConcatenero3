@@ -29,7 +29,7 @@ class SeqUtils ():
     def __init__ (self, missing="X"):
         self.missing = missing
 
-    def rm_illegal(self,name):
+    def rm_illegal (self,name):
     """ Removes any 'illegal' charaters from the taxas' names. """
         warning = ""
         chars = set(" ",":",",",")","(",";","[","]","'")
@@ -78,40 +78,37 @@ class SeqUtils ():
                 print ("File not in correct Phylip format. First non-empty line of the input file %s does not start with two intergers separated by whitespace. Please verify the file, or the input format settings\nExiting..." % input_alignment)
                 raise SystemExit
 
-    def filetype(infile_name):
-        #Detects the type of file to be parsed
+    def autofinder (infile_name):
+        #Autodetects the type of file to be parsed. Based on headers.
         autofind = "unknown"
         infile = open(infile_name,'r')
         header = infile.readline()
         while header.startswith("\n"):
-            header = infile.readline()
-        phy_header = header.strip().split()
+            header = next(infile)
+        infile.close()
+
         if header.upper().startswith("#NEXUS"):
             autofind = "nexus"
-            return autofind
-        elif len(phy_header) == 2 and phy_header[0].isdigit():
-            autofind = "phylip"
-            return autofind
+            break
         elif header.startswith(">"):
             autofind = "fasta"
-            return autofind
-        elif header.startswith("\n"):
-            header = infile.readline()
-            if header.startswith(">"):
-                autofind = "fasta"
-                return autofind
+            break
+        elif len(header.strip().split()) == 2 and phy_header[0].isdigit():
+            autofind = "phylip"
+            break
 
-        infile.close()
         return autofind
 
     def rm_taxa (self, alignment_dic, taxa_list):
         """ Function that removes specified taxa from the alignment """
         alignment_mod = {}
         taxa_order = []
+
         for taxa, sequence in alignment_dic.items():
             if taxa not in taxa_list:
                 alignment_mod[taxa] = sequence
                 taxa_order.append(taxa)
+
         return alignment_mod, taxa_order
 
     def pickle_taxa (self, alignment_dic, mode):
@@ -128,7 +125,9 @@ class SeqUtils ():
         return self.taxa_list
 
     def import_taxa (self, alignment_dic):
-        """ Function that imports new taxa. It mainly exists to complete single locus aligments with taxa that are not present in the current alignment but occur in other alignments """
+        """ Function that imports new taxa. It mainly exists to complete single
+        locus aligments with taxa that are not present in the current alignment
+        but occur in other alignments """
         alignment_len = self.loci_lengths[0]
         for taxa in self.taxa_list:
             if taxa not in alignment_dic:
@@ -136,7 +135,8 @@ class SeqUtils ():
         return alignment_dic, self.taxa_list
 
     def check_sizes (self, alignment_dic, current_file):
-        """ Function to test whether all sequences are of the same size and, if not, which are different """
+        """ Function to test whether all sequences are of the same size and, if
+        not, which are different """
         # Determine the most common length
         commonSeq = max(set([v for v in alignment_dic.values()]),key=[v for v in alignment_dic.values()].count)
         # Creates a dictionary with the sequences, and respective length, of different length
