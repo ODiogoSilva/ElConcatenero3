@@ -194,7 +194,7 @@ class SeqUtils ():
 				print ("\rProcessing file %s out of %s" % (input_list.index(infile)+1,len(input_list)),end="")
 
 			# Parse the current alignment
-			current_alignment, taxa_order, current_sequence_len = self.read_alignment(infile,alignment_format)
+			current_alignment, taxa_order, current_sequence_len, temp = self.read_alignment(infile,alignment_format)
 
 			# Algorithm that fills absent taxa with missing data
 			if loci_lengths == []:
@@ -220,7 +220,7 @@ class SeqUtils ():
 					if taxa not in current_alignment: 
 						main_alignment[taxa] += self.missing*current_sequence_len
 						
-		return (main_alignment, main_taxa_order, loci_lengths, loci_range)
+		return (main_alignment, main_taxa_order, sum(loci_lengths), loci_range)
 	
 class writer ():
 		
@@ -230,6 +230,7 @@ class writer ():
 		self.coding = coding
 		self.loci_lengths = loci_lengths
 		self.loci_range = loci_range
+		#print (self.loci_range)
 		self.gap = gap
 		self.missing = missing
 		# The space (in characters) available for the taxon name before the sequence begins
@@ -244,7 +245,7 @@ class writer ():
 	def phylip (self, alignment_dic, conversion=None):
 		""" Writes a pre-parsed alignment dictionary into a new phylip file """
 		out_file = open(self.output_file+".phy","w")
-		out_file.write("%s %s\n" % (len(alignment_dic), sum(self.loci_lengths)))
+		out_file.write("%s %s\n" % (len(alignment_dic), self.loci_lengths))
 		for key in self.taxa_order:
 				out_file.write("%s %s\n" % (key[:self.cut_space_phy].ljust(self.seq_space_phy),alignment_dic[key]))
 		if conversion == None:
