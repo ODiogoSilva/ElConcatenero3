@@ -78,7 +78,7 @@ class SeqUtils ():
                 print ("File not in correct Phylip format. First non-empty line of the input file %s does not start with two intergers separated by whitespace. Please verify the file, or the input format settings\nExiting..." % input_alignment)
                 raise SystemExit
 
-    def autofinder (infile_name):
+    def autofinder (self, infile_name):
         #Autodetects the type of file to be parsed. Based on headers.
         autofind = "unknown"
         infile = open(infile_name,'r')
@@ -134,18 +134,24 @@ class SeqUtils ():
                 alignment_dic[taxa] = self.missing*alignment_len
         return alignment_dic, self.taxa_list
 
-    def check_sizes (self, alignment_dic, current_file):
-        """ Function to test whether all sequences are of the same size and, if
-        not, which are different """
-        # Determine the most common length
-        commonSeq = max(set([v for v in alignment_dic.values()]),key=[v for v in alignment_dic.values()].count)
-        # Creates a dictionary with the sequences, and respective length, of different length
-        difLength = dict((key,value) for key, value in alignment_dic.items() if len(commonSeq) != len(value))
-        if difLength != {}:
-            print ("\nWARNING: Unequal sequence lenght detected in %s" % current_file)
+    def check_sizes (self, Dict, current_file):
+        warning = ""
+        length = 0
+        for i in Dict.values():
+            if length != 0 and len(i) != length:
+                print(length)
+                print(len(i))
+                warning = "Not all of your sequences have the same length.\nYou\
+really should look into this as it is a VERY BAD sign that something is wrong \
+if you are using these sequences for further analyses."
+            length = len(i)
+        return warning
 
     def zorro2rax (self, alignment_file_list, zorro_sufix="_zorro.out"):
-        """ Function that converts the floating point numbers contained in the original zorro output files into intergers that can be interpreted by RAxML. If multiple alignment files are provided, it also concatenates them in the same order """
+        """ Function that converts the floating point numbers contained in the
+        original zorro output files into intergers that can be interpreted by
+        RAxML. If multiple alignment files are provided, it also concatenates
+        them in the same order """
         weigths_storage = []
         for alignment_file in alignment_file_list:
             zorro_file = alignment_file.split(".")[0]+zorro_sufix # This assumes that the prefix of the alignment file is shared with the corresponding zorro file
@@ -154,7 +160,9 @@ class SeqUtils ():
         return weigths_storage
 
     def read_alignment (self, input_alignment, alignment_format, size_check=True):
-        """ ONLY FOR SINGLE FILE/LOCI INPUT: Function that parses an input file alignment and returns a dictionary with the taxa as keys and sequences as values """
+        """ ONLY FOR SINGLE FILE/LOCI INPUT: Function that parses an input file
+        alignment and returns a dictionary with the taxa as keys and sequences
+        as values """
 
         self.check_format (input_alignment, alignment_format)
 
@@ -217,7 +225,9 @@ class SeqUtils ():
         return (alignment_storage, taxa_order, self.loci_lengths, None)
 
     def read_alignments (self, input_list, alignment_format, progress_stat=True):
-        """ Function that parses multiple alignment/loci files and returns a dictionary with the taxa as keys and sequences as values as well as two integers corresponding to the number of taxa and sequence length """
+        """ Function that parses multiple alignment/loci files and returns a
+        dictionary with the taxa as keys and sequences as values as well as two
+        integers corresponding to the number of taxa and sequence length """
 
         loci_lengths = [] # Saves the sequence lengths of the
         loci_range = [] # Saves the loci names as keys and their range as values
@@ -311,7 +321,8 @@ class writer ():
         out_file.close()
 
     def zorro (self, zorro_weigths):
-        """ Creates a concatenated file with the zorro weigths for the corresponding alignment files """
+        """ Creates a concatenated file with the zorro weigths for the
+        corresponding alignment files """
         outfile = self.output_file+"_zorro.out"
         outfile_handle = open(outfile,"w")
         for weigth in zorro_weigths:
