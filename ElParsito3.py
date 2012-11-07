@@ -104,7 +104,7 @@ class SeqUtils ():
 		difLength = dict((key,value) for key, value in alignment_dic.items() if len(commonSeq) != len(value))
 		if difLength != {}:
 			print ("\nWARNING: Unequal sequence lenght detected in %s" % current_file)
-			
+
 	def zorro2rax (self, alignment_file_list, zorro_sufix="_zorro.out"):
 		""" Function that converts the floating point numbers contained in the original zorro output files into intergers that can be interpreted by RAxML. If multiple alignment files are provided, it also concatenates them in the same order """
 		weigths_storage = []
@@ -121,6 +121,7 @@ class SeqUtils ():
 
 		alignment_storage = {} # Save the taxa and their respective sequences
 		taxa_order = [] # Save taxa names to maintain initial order
+		model = [] # Only applies for nexus format. It stores any potential substitution model at the end of the file
 		file_handle = open(input_alignment)
 		
 		# PARSING PHYLIP FORMAT
@@ -154,7 +155,7 @@ class SeqUtils ():
 				if line.strip().lower() == "matrix" and counter == 0: # Skips the nexus header
 					counter = 1
 				elif line.strip() == ";" and counter == 1: # Stop parser here
-					counter = 0
+					counter = 2
 				elif line.strip() != "" and counter == 1: # Start parsing here
 					taxa = line.strip().split()[0].replace(" ","")
 					taxa = self.rm_illegal(taxa)
@@ -164,6 +165,13 @@ class SeqUtils ():
 						alignment_storage[taxa] += "".join(line.strip().split()[1:])
 					else:
 						alignment_storage[taxa] = "".join(line.strip().split()[1:])
+						
+				# This bit of code will extract a potential substitution model from the file
+				elif counter == 2 and line.lower().strip().startswith("lset"):
+					model.append(line.strip())
+				elif counter == 2 and line.lower().strip().startswith("prset"):
+					model.append(line.strip())
+
 			self.loci_lengths = len(list(alignment_storage.values())[0])
 		
 		# Checks the size consistency of the alignment
@@ -176,13 +184,14 @@ class SeqUtils ():
 			print ("WARNING: Duplicated taxa have been found in file %s (%s). Please correct this problem and re-run the program\n" %(input_alignment,", ".join(taxa)))
 			raise SystemExit
 		
-		return (alignment_storage, taxa_order, self.loci_lengths, None)
+		return (alignment_storage, taxa_order, self.loci_lengths, model)
 		
 	def read_alignments (self, input_list, alignment_format, progress_stat=True):
 		""" Function that parses multiple alignment/loci files and returns a dictionary with the taxa as keys and sequences as values as well as two integers corresponding to the number of taxa and sequence length """
 		
 		loci_lengths = [] # Saves the sequence lengths of the 
 		loci_range = [] # Saves the loci names as keys and their range as values
+		models = [] 
 		main_taxa_order = []
 		
 		for infile in input_list:
@@ -192,7 +201,11 @@ class SeqUtils ():
 				print ("\rProcessing file %s out of %s" % (input_list.index(infile)+1,len(input_list)),end="")
 
 			# Parse the current alignment
-			current_alignment, taxa_order, current_sequence_len, temp = self.read_alignment(infile,alignment_format)
+			current_alignment, taxa_order, current_sequence_len, model = self.read_alignment(infile,alignment_format)
+			
+			# If input format is nexus, save the substution model, if any
+			if alignment_format == "nexus":
+				models.append(model)
 
 			# Algorithm that fills absent taxa with missing data
 			if loci_lengths == []:
@@ -218,16 +231,17 @@ class SeqUtils ():
 					if taxa not in current_alignment: 
 						main_alignment[taxa] += self.missing*current_sequence_len
 						
-		return (main_alignment, main_taxa_order, sum(loci_lengths), loci_range)
+		return (main_alignment, main_taxa_order, sum(loci_lengths), loci_range, models)
 	
 class writer ():
 		
-	def __init__ (self, output_file, taxa_order, coding, loci_lengths, loci_range=None, gap = "-", missing = "n", conversion = None):
+	def __init__ (self, output_file, taxa_order, coding, loci_lengths, loci_range=None, gap = "-", missing = "n", conversion = None, models = []):
 		self.output_file = output_file
 		self.taxa_order = taxa_order
 		self.coding = coding
 		self.loci_lengths = loci_lengths
 		self.loci_range = loci_range
+		self.models = models
 		#print (self.loci_range)
 		self.gap = gap
 		self.missing = missing
@@ -270,7 +284,21 @@ class writer ():
 			out_file.write("\nbegin mrbayes;\n")
 			for partition,lrange in self.loci_range:
 				out_file.write("\tcharset %s = %s;\n" % (partition,lrange))
-			out_file.write("\tpartition part = %s: %s;\n\tset partition=part;\nend;" % (len(self.loci_range),", ".join([part[0] for part in self.loci_range])))
+			out_file.write("\tpartition part = %s: %s;\n\tset partition=part;\nend;\n" % (len(self.loci_range),", ".join([part[0] for part in self.loci_range])))
+			
+			# Concatenates the substitution models of the individual partitions
+			if self.models != []:
+				loci_number = 1
+				out_file.write("begin mrbayes;\n")
+				for model in self.models:
+					m1 = model[0].split()
+					m2 = model[1].split()
+					m1_final = m1[0]+" applyto=("+str(loci_number)+") "+" ".join(m1[1:])
+					m2_final = m2[0]+" applyto=("+str(loci_number)+") "+" ".join(m2[1:])
+					out_file.write("\t%s\n\t%s\n" % (m1_final, m2_final))
+					loci_number += 1
+				out_file.write("end;\n")
+			
 		out_file.close()
 			
 	def zorro (self, zorro_weigths):

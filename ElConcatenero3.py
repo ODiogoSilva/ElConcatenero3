@@ -56,7 +56,6 @@ def main_parser(alignment_list):
 	input_format = arg.InputFormat
 	output_format = arg.OutputFormat
 	output_file = arg.outfile
-
 		
 	# Creating main instance of the parser
 	main_instance = ep.SeqUtils (missing_sym)
@@ -87,7 +86,7 @@ def main_parser(alignment_list):
 	# Final consistency check of sequence lengths
 	if arg.check != None:
 		main_instance.check_sizes( alignment_dic, "Concatenated")
-				
+						
 	# Defining output file name
 	if arg.Conversion == None and arg.outfile != None:
 		output_file = "".join(arg.outfile)
@@ -99,8 +98,9 @@ def main_parser(alignment_list):
 		else:
 			output_file = "".join(alignment_list).split(".")[0]
 					
+	print (alignment_storage[4])
 	# Creating main output instance
-	output_instance = ep.writer(output_file, taxa_order, coding, alignment_storage[2], alignment_storage[3],missing=missing_sym)
+	output_instance = ep.writer(output_file, taxa_order, coding, alignment_storage[2], alignment_storage[3],missing=missing_sym, models=alignment_storage[4])
 	
 	# Creating output file(s)
 	if "fasta" in output_format:
