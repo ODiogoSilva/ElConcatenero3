@@ -23,8 +23,6 @@
 #  
 #  
 
-from pympler.asizeof import asizeof
-
 class SeqUtils ():
 	def __init__ (self, missing="X"):
 		self.missing = missing
