@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-#  ElParsito.py v3.0.0-5
+#  ElParsito.py v3.0.1-0
 #
 #  
 #  Copyright 2012 Unknown <diogo@arch>
