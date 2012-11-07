@@ -42,7 +42,6 @@ class SeqUtils ():
 		import collections
 		duplicated_taxa = [x for x, y in collections.Counter(taxa_list).items() if y > 1]
 		return duplicated_taxa
-
 	
 	def check_format (self,input_alignment,alignment_format):
 		""" This function performs some very basic checks to see if the format of the input file is in accordance to the input file format specified when the script is executed """
@@ -161,7 +160,8 @@ class SeqUtils ():
 				elif line.strip() != "" and counter == 1: # Start parsing here
 					taxa = line.strip().split()[0].replace(" ","")
 					taxa = self.rm_illegal(taxa)
-					taxa_order.append(taxa)
+					if taxa not in taxa_order: # Prevents duplications in the list when the input format is interleave
+						taxa_order.append(taxa)
 					if taxa in alignment_storage: # This accomodates for the interleave format
 						alignment_storage[taxa] += "".join(line.strip().split()[1:])
 					else:
@@ -175,7 +175,7 @@ class SeqUtils ():
 		# Checks for duplicate taxa
 		if len(taxa_order) != len(set(taxa_order)):
 			taxa = self.duplicate_taxa(taxa_order)
-			print ("WARNING: Duplicated taxa have been found in file %s (%s). Please correct this problem and re-run the program\n" %(input_file,", ".join(duplicated_taxa)))
+			print ("WARNING: Duplicated taxa have been found in file %s (%s). Please correct this problem and re-run the program\n" %(input_alignment,", ".join(taxa)))
 			raise SystemExit
 		
 		return (alignment_storage, taxa_order, self.loci_lengths, None)
