@@ -64,8 +64,10 @@ def main_parser(alignment_list):
 	if len(alignment_list) == 1:
 		input_alignment = "".join(alignment_list)
 		alignment_storage = main_instance.read_alignment(input_alignment, input_format)
+		model = alignment_storage[3]
 	else:
 		alignment_storage = main_instance.read_alignments(alignment_list, input_format)
+		model = alignment_storage[4]
 		if arg.zorro != None:
 			zorro_code = arg.zorro_infile
 			zorro_weigths = main_instance.zorro2rax(alignment_list,zorro_code)
@@ -98,9 +100,8 @@ def main_parser(alignment_list):
 		else:
 			output_file = "".join(alignment_list).split(".")[0]
 					
-	print (alignment_storage[4])
 	# Creating main output instance
-	output_instance = ep.writer(output_file, taxa_order, coding, alignment_storage[2], alignment_storage[3],missing=missing_sym, models=alignment_storage[4])
+	output_instance = ep.writer(output_file, taxa_order, coding, alignment_storage[2], alignment_storage[3],missing=missing_sym, models=model)
 	
 	# Creating output file(s)
 	if "fasta" in output_format:
