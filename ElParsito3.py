@@ -293,6 +293,7 @@ class writer ():
 					out_file.write("%s %s\n" % (key[:self.cut_space_nex].ljust(self.seq_space_nex),alignment_dic[key][i:align_length]))
 				else:
 					out_file.write("\n")
+			out_file.write(";\n\tend;")
 		# This writes the output in leave format (default)
 		else:
 			out_file.write("#NEXUS\n\nBegin data;\n\tdimensions ntax=%s nchar=%s ;\n\tformat datatype=%s interleave=no gap=%s missing=%s ;\n\tmatrix\n" % (len(alignment_dic), self.loci_lengths, self.coding, self.gap, self.missing))
