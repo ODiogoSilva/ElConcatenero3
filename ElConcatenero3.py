@@ -31,6 +31,7 @@ parser.add_argument("-g",dest="gap",default="-",help="Symbol for gap (default is
 parser.add_argument("-m",dest="missing",default="n",help="Symbol for missing data (default is '%(default)s')")
 parser.add_argument("-if",dest="InputFormat",default="fasta",choices=["fasta","nexus","phylip"],help="Format of the input file(s) (default is '%(default)s')")
 parser.add_argument("-of",dest="OutputFormat",nargs="+",default="nexus",choices=["nexus","phylip","fasta"],help="Format of the ouput file(s). You may select multiple output formats simultaneously (default is '%(default)s')")
+parser.add_argument("-interleave",dest="interleave",action="store_const",const="interleave",help="Specificy this option to write output files in interleave format (currently only supported for nexus files")
 parser.add_argument("-c",dest="Conversion",action="store_const",const=True,help="Used for convertion of the input files passed as arguments with the -in option. This flag precludes the usage of the -o option, as the output file name is automatically generated based on the input file name.")
 parser.add_argument("-o",dest="outfile",help="Name of the output file")
 parser.add_argument("-z",dest="zorro",action="store_const",const=True,help="Use this option if you wish to concatenate auxiliary Zorro files associated with each alignment. Note that the auxiliary files must have the same prefix of the alignment file, with the addition of '_zorro.out'")
@@ -56,6 +57,7 @@ def main_parser(alignment_list):
 	input_format = arg.InputFormat
 	output_format = arg.OutputFormat
 	output_file = arg.outfile
+	interleave = arg.interleave
 		
 	# Creating main instance of the parser
 	main_instance = ep.SeqUtils (missing_sym)
@@ -109,7 +111,8 @@ def main_parser(alignment_list):
 	if "phylip" in output_format:
 		output_instance.phylip(alignment_dic,conversion)
 	if "nexus" in output_format:
-		output_instance.nexus(alignment_dic,conversion)
+		output_instance.nexus(alignment_dic,conversion,interleave)
+		print (interleave)
 	if arg.zorro != None:
 		output_instance.zorro(zorro_weigths)
 		

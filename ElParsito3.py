@@ -273,13 +273,34 @@ class writer ():
 			out_file.write(">%s\n%s\n" % (key,alignment_dic[key]))
 		out_file.close()
 			
-	def nexus (self, alignment_dic, conversion=None):
+	def nexus (self, alignment_dic, conversion=None, form="leave"):
 		""" Writes a pre-parsed alignment dictionary into a new nexus file """
+		align_length = len(list(alignment_dic.values())[0])
 		out_file = open(self.output_file+".nex","w")
-		out_file.write("#NEXUS\n\nBegin data;\n\tdimensions ntax=%s nchar=%s ;\n\tformat datatype=%s interleave=no gap=%s missing=%s ;\n\tmatrix\n" % (len(alignment_dic), self.loci_lengths, self.coding, self.gap, self.missing))
-		for key in self.taxa_order:
-			out_file.write("%s %s\n" % (key[:self.cut_space_nex].ljust(self.seq_space_nex),alignment_dic[key]))
-		out_file.write(";\n\tend;")
+		
+		# This writes the output in interleave format
+		if form == "interleave":
+			out_file.write("#NEXUS\n\nBegin data;\n\tdimensions ntax=%s nchar=%s ;\n\tformat datatype=%s interleave=yes gap=%s missing=%s ;\n\tmatrix\n" % (len(alignment_dic), self.loci_lengths, self.coding, self.gap, self.missing))
+			counter = 0
+			for i in range (90,align_length,90):
+				for key in self.taxa_order:
+					out_file.write("%s %s\n" % (key[:self.cut_space_nex].ljust(self.seq_space_nex),alignment_dic[key][counter:i]))
+				else:
+					out_file.write("\n")
+					counter = i				
+			else:
+				for key in self.taxa_order:
+					out_file.write("%s %s\n" % (key[:self.cut_space_nex].ljust(self.seq_space_nex),alignment_dic[key][i:align_length]))
+				else:
+					out_file.write("\n")
+		# This writes the output in leave format (default)
+		else:
+			out_file.write("#NEXUS\n\nBegin data;\n\tdimensions ntax=%s nchar=%s ;\n\tformat datatype=%s interleave=no gap=%s missing=%s ;\n\tmatrix\n" % (len(alignment_dic), self.loci_lengths, self.coding, self.gap, self.missing))
+			for key in self.taxa_order:
+				out_file.write("%s %s\n" % (key[:self.cut_space_nex].ljust(self.seq_space_nex),alignment_dic[key]))
+			out_file.write(";\n\tend;")
+			
+		# If this is not a conversion, write a block with the charsets and partition definition at the end of the taxa block
 		if conversion == None:
 			out_file.write("\nbegin mrbayes;\n")
 			for partition,lrange in self.loci_range:
