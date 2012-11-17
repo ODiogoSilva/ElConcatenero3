@@ -33,6 +33,10 @@ ElConcatenero3.py has the following options (which can also be consulted by typi
                         
   -of *{nexus,phylip,fasta}*		**Format of the ouput file (default is 'nexus')**
                         
+  -interleave						**Specificy this option to write output files in**
+									**interleave format (currently only supported for nexus**
+									**files**
+             
   -c                    			**Used for convertion of the input files passed as**
 									**arguments with the -in option. This flag precludes the**
 									**usage of the -o option, as the output file name is**
