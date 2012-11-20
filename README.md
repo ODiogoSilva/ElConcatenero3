@@ -55,7 +55,7 @@ ElConcatenero3.py has the following options (which can also be consulted by typi
 									**the auxiliary files must have the same prefix of the**
 									**alignment file, with the addition of '_zorro.out'**
 								
-  -zfile *[ZORRO_INFILE ...]*		** provide the sufix for the concatenated zorro file**
+  -zfile *[ZORRO_INFILE ...]*		**provide the sufix for the concatenated zorro file**
 									**(default is '_zorro.out')**
   
   -rm *[REMOVE ...]*				**Removes the specified taxa from the final alignment.**
