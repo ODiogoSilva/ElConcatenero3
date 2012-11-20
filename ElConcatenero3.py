@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 
-# ElConcatenero v3.0.2
+# ElConcatenero v3.1.0
 # Author: Diogo N Silva
-# Last update: 17/11/2012
+# Last update: 20/11/2012
 # ElConcatenero is tool to convert and concatenate several commonly used data format types. Currently, supported input formats include Nexus, FastA and Phylip. Output may be in Nexus, Phylip (wiht part file for RaXML) or FastA. Please type "ElConcatenero -h" or read the README.md file for information on usage.
 
 #  Copyright 2012 Diogo N Silva <diogo@arch>
@@ -29,7 +29,7 @@ import ElParsito3 as ep
 parser = argparse.ArgumentParser(description="Concatenates DNA data matrices")
 parser.add_argument("-g",dest="gap",default="-",help="Symbol for gap (default is '%(default)s')")
 parser.add_argument("-m",dest="missing",default="n",help="Symbol for missing data (default is '%(default)s')")
-parser.add_argument("-if",dest="InputFormat",default="fasta",choices=["fasta","nexus","phylip"],help="Format of the input file(s) (default is '%(default)s')")
+parser.add_argument("-if",dest="InputFormat",default="guess",choices=["fasta","nexus","phylip","guess"],help="Format of the input file(s) (default is '%(default)s')")
 parser.add_argument("-of",dest="OutputFormat",nargs="+",default="nexus",choices=["nexus","phylip","fasta"],help="Format of the ouput file(s). You may select multiple output formats simultaneously (default is '%(default)s')")
 parser.add_argument("-interleave",dest="interleave",action="store_const",const="interleave",help="Specificy this option to write output files in interleave format (currently only supported for nexus files")
 parser.add_argument("-c",dest="Conversion",action="store_const",const=True,help="Used for convertion of the input files passed as arguments with the -in option. This flag precludes the usage of the -o option, as the output file name is automatically generated based on the input file name.")
@@ -37,7 +37,7 @@ parser.add_argument("-o",dest="outfile",help="Name of the output file")
 parser.add_argument("-z",dest="zorro",action="store_const",const=True,help="Use this option if you wish to concatenate auxiliary Zorro files associated with each alignment. Note that the auxiliary files must have the same prefix of the alignment file, with the addition of '_zorro.out'")
 parser.add_argument("-zfile",dest="zorro_infile",nargs="*",default="_zorro.out",help="Provide the sufix for the concatenated zorro file (default is '%(default)s')")
 parser.add_argument("-in",dest="infile",nargs="+",required=True,help="Provide the input file name. If multiple files are provided, plase separated the names with spaces")
-parser.add_argument("-code",dest="coding",default="DNA",choices=["DNA","Protein"],help="The coding of your molecular sequences")
+parser.add_argument("-code",dest="coding",choices=["DNA","Protein"],help="The coding of your molecular sequences")
 parser.add_argument("-rm",dest="remove",nargs="*",help="Removes the specified taxa from the final alignment. Multiple taxa mais be specified and separated by whitespace")
 parser.add_argument("--pickle-taxa",dest="pickle", choices=["dump","load"],help="dump option: Only output a picke object with the taxa names of the input alignment; load option: loads the taxa names from a pickle object to be incorporated in the output alignment")
 parser.add_argument("--check",dest="check",action="store_const",const=True,help="Provides a final check for the lengths of the alignment sequences")
@@ -58,6 +58,17 @@ def main_parser(alignment_list):
 	output_format = arg.OutputFormat
 	output_file = arg.outfile
 	interleave = arg.interleave
+	
+	# Guessing input format
+	if arg.InputFormat == "guess":
+		auto_format = ep.autofinder (alignment_list[0])
+		if auto_format[0] != "unknown":
+			input_format = auto_format[0]
+			coding = auto_format[1][0]
+			missing_sym = auto_format[1][1]
+			print ("Input format set to %s.\nGenetic code set to %s." % (auto_format[0],auto_format[1][0]))
+		else:
+			print ("Input format could not be determined. Falling back to default values...")
 		
 	# Creating main instance of the parser
 	main_instance = ep.SeqUtils (missing_sym)
@@ -89,8 +100,8 @@ def main_parser(alignment_list):
 		
 	# Final consistency check of sequence lengths
 	if arg.check != None:
-		main_instance.check_sizes( alignment_dic, "Concatenated")
-						
+		main_instance.check_sizes( alignment_dic, "Concatenated")					
+	
 	# Defining output file name
 	if arg.Conversion == None and arg.outfile != None:
 		output_file = "".join(arg.outfile)
@@ -112,7 +123,6 @@ def main_parser(alignment_list):
 		output_instance.phylip(alignment_dic,conversion)
 	if "nexus" in output_format:
 		output_instance.nexus(alignment_dic,conversion,interleave)
-		print (interleave)
 	if arg.zorro != None:
 		output_instance.zorro(zorro_weigths)
 		

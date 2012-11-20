@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-#  ElParsito.py v3.0.1-0
+#  ElParsito.py v3.1.0-0
 #
 #  
 #  Copyright 2012 Unknown <diogo@arch>
@@ -22,6 +22,51 @@
 #  MA 02110-1301, USA.
 #  
 #  
+
+def autofinder (reference_file):
+	""" Autodetects the type of file to be parsed. Based on headers """
+	autofind = "unknown"
+	sequence = ""
+	file_handle = open(reference_file,'r')
+     
+	header = file_handle.readline()
+	while header.startswith("\n"):
+		header = next(file_handle)
+     
+	if header.upper().startswith("#NEXUS"):
+		autofind = "nexus"
+		for line in file_handle:
+			if line.strip().lower() == "matrix":
+				sequence = "".join(file_handle.readline().split()[1:]).strip()
+				break
+         
+	elif header.startswith(">"):
+		autofind = "fasta"
+		for line in file_handle:
+			if line.strip()[0] != ">":
+				sequence += line.strip()
+			elif line.strip()[0] == ">":
+				break
+         
+	elif len(header.strip().split()) == 2 and header[0].isdigit() and header[1].isdigit():
+		autofind = "phylip"
+		sequence = "".join(file_handle.readline().split()[1:]).strip()
+	
+	# Guessing the genetic code
+	code = guess_code (sequence)
+	
+	return autofind, code
+
+def guess_code (sequence):
+	""" Function that guesses the code of the molecular sequences (i.e., DNA or Protein) based on the first sequence of a reference file """
+	sequence = sequence.upper().replace("-","")
+	DNA_count = sequence.count("A") + sequence.count("T") + sequence.count("G") + sequence.count("C") + sequence.count("N")
+	DNA_proportion = float(DNA_count)/float(len(sequence))
+	if DNA_proportion > 0.9:
+		code = ("DNA","N")
+	else:
+		code = ("Protein","X")
+	return code	
 
 class SeqUtils ():
 	def __init__ (self, missing="X"):
@@ -122,6 +167,7 @@ class SeqUtils ():
 		alignment_storage = {} # Save the taxa and their respective sequences
 		taxa_order = [] # Save taxa names to maintain initial order
 		model = [] # Only applies for nexus format. It stores any potential substitution model at the end of the file
+		
 		file_handle = open(input_alignment)
 		
 		# PARSING PHYLIP FORMAT
@@ -204,7 +250,7 @@ class SeqUtils ():
 			current_alignment, taxa_order, current_sequence_len, model = self.read_alignment(infile,alignment_format)
 			
 			# If input format is nexus, save the substution model, if any
-			if alignment_format == "nexus":
+			if alignment_format == "nexus" and model != []:
 				models.append(model)
 
 			# Algorithm that fills absent taxa with missing data
@@ -242,7 +288,6 @@ class writer ():
 		self.loci_lengths = loci_lengths
 		self.loci_range = loci_range
 		self.models = models
-		#print (self.loci_range)
 		self.gap = gap
 		self.missing = missing
 		# The space (in characters) available for the taxon name before the sequence begins
