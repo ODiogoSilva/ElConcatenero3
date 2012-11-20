@@ -276,7 +276,8 @@ class SeqUtils ():
 				for taxa in main_alignment.keys():
 					if taxa not in current_alignment: 
 						main_alignment[taxa] += self.missing*current_sequence_len
-						
+		else:
+			print ("\n")				
 		return (main_alignment, main_taxa_order, sum(loci_lengths), loci_range, models)
 	
 class writer ():
