@@ -25,11 +25,13 @@ ElConcatenero3.py has the following options (which can also be consulted by typi
 
   -h, --help						**show this help message and exit**
  
-  -g *GAP*							**Symbol for gap (default is '-')**
+  -in *INFILE [INFILE ...]*			**Provide the input file name. If multiple files are**
+									**provided, plase separated the names with spaces**
+									
   
-  -m *MISSING*						**Symbol for missing data (default is 'n')**
-  
-  -if *{fasta,nexus,phylip}*		**Format of the input file(s) (default is 'fasta')**
+  -if *{fasta,nexus,phylip,guess}*	**Format of the input file(s). The default is 'guess'**
+									**in which the program tries to guess the input format**
+									**and genetic code**
                         
   -of *{nexus,phylip,fasta}*		**Format of the ouput file (default is 'nexus')**
                         
@@ -41,11 +43,13 @@ ElConcatenero3.py has the following options (which can also be consulted by typi
 									**arguments with the -in option. This flag precludes the**
 									**usage of the -o option, as the output file name is**
 									**automatically generated based on the input file name.**
-                        
-  -o *OUTFILE*            			**Name of the output file**
+
+  -o *OUTFILE*            			**Name of the output file**									
+ 
+  -g *GAP*							**Symbol for gap (default is '-')**
   
-  -in *INFILE [INFILE ...]*			**Provide the input file name. If multiple files are**
-									**provided, plase separated the names with spaces**
+  -m *MISSING*						**Symbol for missing data (default is 'n')**
+  
   -z								**Use this option if you wish to concatenate auxiliary**
 									**Zorro files associated with each alignment. Note that**
 									**the auxiliary files must have the same prefix of the**
@@ -53,8 +57,6 @@ ElConcatenero3.py has the following options (which can also be consulted by typi
 								
   -zfile *[ZORRO_INFILE ...]*		** provide the sufix for the concatenated zorro file**
 									**(default is '_zorro.out')**
-
-  -code *{DNA, Protein}*			**The coding of your molecular sequences**
   
   -rm *[REMOVE ...]*				**Removes the specified taxa from the final alignment.**
 									**Multiple taxa mais be specified and separated by**
@@ -78,11 +80,11 @@ ElConcatenero3.py -c -of nexus -in input_file.fas
 
 ##### Conversion (Phylip to Fasta)
 
-ElConcatenero3.py -c -if phylip -of nexus -in input_file.phy
+ElConcatenero3.py -c -of nexus -in input_file.phy
 
 ##### Conversion (Nexus to Phylip and fasta)
 
-ElConcatenero3.py -c -if nexus -of phylip fasta -in input_file.nex
+ElConcatenero3.py -c -of phylip fasta -in input_file.nex
 
 ##### Conversion (Multiple Fasta files to Nexus)
 
@@ -94,22 +96,20 @@ ElConcatenero3.py -c -of nexus -in *.fas
 
 ##### Concatenation (Nexus to Nexus)
 
-ElConcetenero.py -if nexus -of nexus -in input_file1.nex input_file2.nex input_file3.nex (...) input_fileN.nex -o concatenated_file
+ElConcetenero.py -of nexus -in input_file1.nex input_file2.nex input_file3.nex (...) input_fileN.nex -o concatenated_file
 
 or
 
-ElConcetenero.py -if nexus -of nexus -in *.nex -o concatenated_file
+ElConcetenero.py -of nexus -in *.nex -o concatenated_file
 
 ##### Concatenation (Fasta to Phylip)
 
-ElConcatenero3.py -if fasta -of phylip -in input_file1.fas input_file2.fas (...) input_fileN.fas -o concatenated_file
+ElConcatenero3.py -of phylip -in input_file1.fas input_file2.fas (...) input_fileN.fas -o concatenated_file
 
 or
 
-ElConcatenero3.py -if fasta -of phylip -in *.fas -o concatenated_file
+ElConcatenero3.py -of phylip -in *.fas -o concatenated_file
 
 #### ToDo
 
 - Ability to parse concatenated datasets, either to separate them or to further concatenate
-- Auto recognition of DNA or Protein sequences
-- Auto recognition of input format
