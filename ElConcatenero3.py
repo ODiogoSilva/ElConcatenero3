@@ -29,7 +29,7 @@ import ElParsito3 as ep
 parser = argparse.ArgumentParser(description="Concatenates DNA data matrices")
 
 parser.add_argument("-in",dest="infile",nargs="+",required=True,help="Provide the input file name. If multiple files are provided, plase separated the names with spaces")
-parser.add_argument("-if",dest="InputFormat",default="guess",choices=["fasta","nexus","phylip","guess"],help="Format of the input file(s) (default is '%(default)s')")
+parser.add_argument("-if",dest="InputFormat",default="guess",choices=["fasta","nexus","phylip","guess"],help="Format of the input file(s). The default is 'guess' in which the program tries to guess the input format and genetic code automatically")
 parser.add_argument("-of",dest="OutputFormat",nargs="+",default="nexus",choices=["nexus","phylip","fasta"],help="Format of the ouput file(s). You may select multiple output formats simultaneously (default is '%(default)s')")
 parser.add_argument("-interleave",dest="interleave",action="store_const",const="interleave",help="Specificy this option to write output files in interleave format (currently only supported for nexus files")
 parser.add_argument("-c",dest="Conversion",action="store_const",const=True,help="Used for convertion of the input files passed as arguments with the -in option. This flag precludes the usage of the -o option, as the output file name is automatically generated based on the input file name.")
@@ -41,9 +41,9 @@ parser.add_argument("-m",dest="missing",default="n",help="Symbol for missing dat
 parser.add_argument("-z",dest="zorro",action="store_const",const=True,help="Use this option if you wish to concatenate auxiliary Zorro files associated with each alignment. Note that the auxiliary files must have the same prefix of the alignment file, with the addition of '_zorro.out'")
 parser.add_argument("-zfile",dest="zorro_infile",nargs="*",default="_zorro.out",help="Provide the sufix for the concatenated zorro file (default is '%(default)s')")
 
-parser.add_argument("-rm",dest="remove",nargs="*",help="Removes the specified taxa from the final alignment. Multiple taxa mais be specified and separated by whitespace")
+parser.add_argument("-rm",dest="remove",nargs="*",help="Removes the specified taxa from the final alignment. Multiple taxa may be specified and separated by whitespace")
 
-parser.add_argument("--pickle-taxa",dest="pickle", choices=["dump","load"],help="dump option: Only output a picke object with the taxa names of the input alignment; load option: loads the taxa names from a pickle object to be incorporated in the output alignment")
+parser.add_argument("--pickle-taxa",dest="pickle", choices=["dump","load"],help="Dump option: Only output a pickle object with the taxa names of the input alignment; Load option: loads the taxa names from a pickle object to be incorporated in the output alignment")
 
 parser.add_argument("--check",dest="check",action="store_const",const=True,help="Provides a final check for the lengths of the alignment sequences")
 
@@ -57,12 +57,12 @@ def main_parser(alignment_list):
 	# Defining main variables
 	gap = arg.gap
 	missing_sym = arg.missing
-	coding = arg.coding
 	conversion = arg.Conversion
 	input_format = arg.InputFormat
 	output_format = arg.OutputFormat
 	output_file = arg.outfile
 	interleave = arg.interleave
+	coding = "DNA"
 	
 	# Guessing input format
 	if arg.InputFormat == "guess":

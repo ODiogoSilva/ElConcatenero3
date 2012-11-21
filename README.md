@@ -31,13 +31,13 @@ ElConcatenero3.py has the following options (which can also be consulted by typi
   
   -if *{fasta,nexus,phylip,guess}*	**Format of the input file(s). The default is 'guess'**
 									**in which the program tries to guess the input format**
-									**and genetic code**
+									**and genetic code automatically**
                         
   -of *{nexus,phylip,fasta}*		**Format of the ouput file (default is 'nexus')**
                         
   -interleave						**Specificy this option to write output files in**
 									**interleave format (currently only supported for nexus**
-									**files**
+									**files)**
              
   -c                    			**Used for convertion of the input files passed as**
 									**arguments with the -in option. This flag precludes the**
@@ -55,15 +55,15 @@ ElConcatenero3.py has the following options (which can also be consulted by typi
 									**the auxiliary files must have the same prefix of the**
 									**alignment file, with the addition of '_zorro.out'**
 								
-  -zfile *[ZORRO_INFILE ...]*		**provide the sufix for the concatenated zorro file**
+  -zfile *[ZORRO_INFILE ...]*		**Provide the sufix for the concatenated zorro file**
 									**(default is '_zorro.out')**
   
   -rm *[REMOVE ...]*				**Removes the specified taxa from the final alignment.**
-									**Multiple taxa mais be specified and separated by**
+									**Multiple taxa may be specified and separated by**
 									**whitespace**
 								
-  -\-pickle-taxa *{dump,load}*		**dump option: Only output a picke object with the taxa**
-									**names of the input alignment; load option: loads the**
+  -\-pickle-taxa *{dump,load}*		**Dump option: Only output a pickle object with the taxa**
+									**names of the input alignment; Load option: loads the**
 									**taxa names from a pickle object to be incorporated in**
 									**the output alignment**
 									
