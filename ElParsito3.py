@@ -69,8 +69,6 @@ def guess_code (sequence):
 	return code	
 
 class SeqUtils ():
-	def __init__ (self, missing="X"):
-		self.missing = missing
 	
 	def rm_illegal (self,string):
 		""" Function that removes illegal characters from taxa names """
@@ -133,12 +131,12 @@ class SeqUtils ():
 			self.taxa_list = pickle.load(open("taxa_list","rb"))
 		return self.taxa_list
 		
-	def import_taxa (self, alignment_dic):
+	def import_taxa (self, alignment_dic,missing="X"):
 		""" Function that imports new taxa. It mainly exists to complete single locus aligments with taxa that are not present in the current alignment but occur in other alignments """
 		alignment_len = self.loci_lengths[0]
 		for taxa in self.taxa_list:
 			if taxa not in alignment_dic:
-				alignment_dic[taxa] = self.missing*alignment_len
+				alignment_dic[taxa] = missing*alignment_len
 		return alignment_dic, self.taxa_list
 		
 	def check_sizes (self, alignment_dic, current_file):

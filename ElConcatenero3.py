@@ -76,7 +76,7 @@ def main_parser(alignment_list):
 			print ("Input format could not be determined. Falling back to default values...")
 		
 	# Creating main instance of the parser
-	main_instance = ep.SeqUtils (missing_sym)
+	main_instance = ep.SeqUtils ()
 	
 	# Parsing input file(s)
 	if len(alignment_list) == 1:
@@ -101,7 +101,7 @@ def main_parser(alignment_list):
 	# They can only be used separately, though.
 	if arg.pickle != None:
 		main_instance.pickle_taxa(alignment_dic,"".join(arg.pickle))
-		alignment_dic, taxa_order = main_instance.import_taxa(alignment_dic)
+		alignment_dic, taxa_order = main_instance.import_taxa(alignment_dic,missing_sym)
 		
 	# Final consistency check of sequence lengths
 	if arg.check != None:
