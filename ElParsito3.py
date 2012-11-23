@@ -230,7 +230,7 @@ class SeqUtils ():
 		
 		return (alignment_storage, taxa_order, self.loci_lengths, model)
 		
-	def read_alignments (self, input_list, alignment_format, progress_stat=True):
+	def read_alignments (self, input_list, alignment_format, missing = "X", progress_stat=True):
 		""" Function that parses multiple alignment/loci files and returns a dictionary with the taxa as keys and sequences as values as well as two integers corresponding to the number of taxa and sequence length """
 		
 		loci_lengths = [] # Saves the sequence lengths of the 
@@ -263,7 +263,7 @@ class SeqUtils ():
 					if taxa in main_alignment: 
 						main_alignment[taxa] += sequence # Append the sequence from the current alignment to the respective taxa in the main alignment
 					elif taxa not in main_alignment:
-						main_alignment[taxa] = self.missing*sum(loci_lengths)+sequence # If the taxa does not yet exist in the main alignment, create the new entry with a sequence of 'n' characters of the same size as the length of the missed loci and the sequence from the current alignment
+						main_alignment[taxa] = missing*sum(loci_lengths)+sequence # If the taxa does not yet exist in the main alignment, create the new entry with a sequence of 'n' characters of the same size as the length of the missed loci and the sequence from the current alignment
 						main_taxa_order.append(taxa)
 
 				# Saving the range for the subsequent loci
@@ -273,7 +273,7 @@ class SeqUtils ():
 				# Check if any taxa from the main alignment are missing from the current alignment. If yes, fill them with 'n'
 				for taxa in main_alignment.keys():
 					if taxa not in current_alignment: 
-						main_alignment[taxa] += self.missing*current_sequence_len
+						main_alignment[taxa] += missing*current_sequence_len
 		else:
 			print ("\n")				
 		return (main_alignment, main_taxa_order, sum(loci_lengths), loci_range, models)
