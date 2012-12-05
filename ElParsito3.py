@@ -48,7 +48,7 @@ def autofinder (reference_file):
 			elif line.strip()[0] == ">":
 				break
          
-	elif len(header.strip().split()) == 2 and header[0].isdigit() and header[1].isdigit():
+	elif len(header.strip().split()) == 2 and header.strip().split()[0].isdigit() and header.strip().split()[1].isdigit():
 		autofind = "phylip"
 		sequence = "".join(file_handle.readline().split()[1:]).strip()
 	
@@ -131,12 +131,11 @@ class SeqUtils ():
 			self.taxa_list = pickle.load(open("taxa_list","rb"))
 		return self.taxa_list
 		
-	def import_taxa (self, alignment_dic,missing="X"):
+	def import_taxa (self, alignment_dic,length,missing="X"):
 		""" Function that imports new taxa. It mainly exists to complete single locus aligments with taxa that are not present in the current alignment but occur in other alignments """
-		alignment_len = self.loci_lengths[0]
 		for taxa in self.taxa_list:
 			if taxa not in alignment_dic:
-				alignment_dic[taxa] = missing*alignment_len
+				alignment_dic[taxa] = missing*length
 		return alignment_dic, self.taxa_list
 		
 	def check_sizes (self, alignment_dic, current_file):
@@ -171,7 +170,7 @@ class SeqUtils ():
 		# PARSING PHYLIP FORMAT
 		if alignment_format == "phylip":
 			header = file_handle.readline().split() # Get the number of taxa and sequence length from the file header
-			self.loci_lengths = int(header[1])
+			loci_lengths = int(header[1])
 			for line in file_handle:
 				if line != "":
 					taxa = line.split()[0].replace(" ","")
@@ -190,7 +189,7 @@ class SeqUtils ():
 					alignment_storage[taxa] = ""
 				else:
 					alignment_storage[taxa] += line.strip()
-			self.loci_lengths = len(list(alignment_storage.values())[0])
+			loci_lengths = len(list(alignment_storage.values())[0])
 			
 		# PARSING NEXUS FORMAT
 		elif alignment_format == "nexus":
@@ -216,7 +215,7 @@ class SeqUtils ():
 				elif counter == 2 and line.lower().strip().startswith("prset"):
 					model.append(line.strip())
 
-			self.loci_lengths = len(list(alignment_storage.values())[0])
+			loci_lengths = len(list(alignment_storage.values())[0])
 		
 		# Checks the size consistency of the alignment
 		if size_check == True:
@@ -228,12 +227,12 @@ class SeqUtils ():
 			print ("WARNING: Duplicated taxa have been found in file %s (%s). Please correct this problem and re-run the program\n" %(input_alignment,", ".join(taxa)))
 			raise SystemExit
 		
-		return (alignment_storage, taxa_order, self.loci_lengths, model)
+		return (alignment_storage, taxa_order, loci_lengths, model)
 		
 	def read_alignments (self, input_list, alignment_format, missing = "X", progress_stat=True):
 		""" Function that parses multiple alignment/loci files and returns a dictionary with the taxa as keys and sequences as values as well as two integers corresponding to the number of taxa and sequence length """
 		
-		loci_lengths = [] # Saves the sequence lengths of the 
+		self.loci_lengths = [] # Saves the sequence lengths of the 
 		loci_range = [] # Saves the loci names as keys and their range as values
 		models = [] 
 		main_taxa_order = []
@@ -252,10 +251,10 @@ class SeqUtils ():
 				models.append(model)
 
 			# Algorithm that fills absent taxa with missing data
-			if loci_lengths == []:
+			if self.loci_lengths == []:
 				main_alignment = current_alignment # Create the main alignment dictionary from the first current alignment and never visit this statement again
 				main_taxa_order = taxa_order
-				loci_lengths.append(current_sequence_len)
+				self.loci_lengths.append(current_sequence_len)
 				loci_range.append((infile.split(".")[0],"1-%s" % (current_sequence_len))) # Saving the range for the first loci
 	
 			else:
@@ -263,12 +262,12 @@ class SeqUtils ():
 					if taxa in main_alignment: 
 						main_alignment[taxa] += sequence # Append the sequence from the current alignment to the respective taxa in the main alignment
 					elif taxa not in main_alignment:
-						main_alignment[taxa] = missing*sum(loci_lengths)+sequence # If the taxa does not yet exist in the main alignment, create the new entry with a sequence of 'n' characters of the same size as the length of the missed loci and the sequence from the current alignment
+						main_alignment[taxa] = missing*sum(self.loci_lengths)+sequence # If the taxa does not yet exist in the main alignment, create the new entry with a sequence of 'n' characters of the same size as the length of the missed loci and the sequence from the current alignment
 						main_taxa_order.append(taxa)
 
 				# Saving the range for the subsequent loci
-				loci_range.append((infile.split(".")[0],"%s-%s" % (sum(loci_lengths)+1, sum(loci_lengths)+current_sequence_len)))
-				loci_lengths.append(current_sequence_len)
+				loci_range.append((infile.split(".")[0],"%s-%s" % (sum(self.loci_lengths)+1, sum(self.loci_lengths)+current_sequence_len)))
+				self.loci_lengths.append(current_sequence_len)
 				
 				# Check if any taxa from the main alignment are missing from the current alignment. If yes, fill them with 'n'
 				for taxa in main_alignment.keys():
@@ -276,7 +275,7 @@ class SeqUtils ():
 						main_alignment[taxa] += missing*current_sequence_len
 		else:
 			print ("\n")				
-		return (main_alignment, main_taxa_order, sum(loci_lengths), loci_range, models)
+		return (main_alignment, main_taxa_order, sum(self.loci_lengths), loci_range, models)
 	
 class writer ():
 		

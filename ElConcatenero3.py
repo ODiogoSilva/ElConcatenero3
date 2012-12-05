@@ -84,7 +84,7 @@ def main_parser(alignment_list):
 		alignment_storage = main_instance.read_alignment(input_alignment, input_format)
 		model = alignment_storage[3]
 	else:
-		alignment_storage = main_instance.read_alignments(alignment_list, input_format)
+		alignment_storage = main_instance.read_alignments(alignment_list, input_format,missing=missing_sym)
 		model = alignment_storage[4]
 		if arg.zorro != None:
 			zorro_code = arg.zorro_infile
@@ -101,7 +101,7 @@ def main_parser(alignment_list):
 	# They can only be used separately, though.
 	if arg.pickle != None:
 		main_instance.pickle_taxa(alignment_dic,"".join(arg.pickle))
-		alignment_dic, taxa_order = main_instance.import_taxa(alignment_dic,missing_sym)
+		alignment_dic, taxa_order = main_instance.import_taxa(alignment_dic,len(list(alignment_dic.values())[0]),missing_sym)
 		
 	# Final consistency check of sequence lengths
 	if arg.check != None:
