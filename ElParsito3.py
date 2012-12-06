@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-#  ElParsito.py v3.1.0-1
+#  ElParsito.py v3.1.1-0
 #
 #  
 #  Copyright 2012 Unknown <diogo@arch>
@@ -297,7 +297,7 @@ class writer ():
 		self.cut_space_phy = 50
 		self.cut_space_ima2 = 8
 			
-	def phylip (self, alignment_dic, conversion=None):
+	def phylip (self, alignment_dic, model="WAG", conversion=None):
 		""" Writes a pre-parsed alignment dictionary into a new phylip file """
 		out_file = open(self.output_file+".phy","w")
 		out_file.write("%s %s\n" % (len(alignment_dic), self.loci_lengths))
@@ -306,7 +306,7 @@ class writer ():
 		if conversion == None:
 			partition_file = open(self.output_file+"_part.File","a")
 			for partition,lrange in self.loci_range:
-				partition_file.write("%s, %s = %s\n" % (self.coding,partition,lrange))
+				partition_file.write("%s, %s = %s\n" % (model,partition,lrange))
 		out_file.close()
 				
 	def fasta (self, alignment_dic, conversion=None):

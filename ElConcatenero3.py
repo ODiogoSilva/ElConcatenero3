@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 
-# ElConcatenero v3.1.0-1
+# ElConcatenero v3.1.1-0
 # Author: Diogo N Silva
-# Last update: 20/11/2012
+# Last update: 6/12/2012
 # ElConcatenero is tool to convert and concatenate several commonly used data format types. Currently, supported input formats include Nexus, FastA and Phylip. Output may be in Nexus, Phylip (wiht part file for RaXML) or FastA. Please type "ElConcatenero -h" or read the README.md file for information on usage.
 
 #  Copyright 2012 Diogo N Silva <diogo@arch>
@@ -31,6 +31,7 @@ parser = argparse.ArgumentParser(description="Concatenates DNA data matrices")
 parser.add_argument("-in",dest="infile",nargs="+",required=True,help="Provide the input file name. If multiple files are provided, plase separated the names with spaces")
 parser.add_argument("-if",dest="InputFormat",default="guess",choices=["fasta","nexus","phylip","guess"],help="Format of the input file(s). The default is 'guess' in which the program tries to guess the input format and genetic code automatically")
 parser.add_argument("-of",dest="OutputFormat",nargs="+",default="nexus",choices=["nexus","phylip","fasta"],help="Format of the ouput file(s). You may select multiple output formats simultaneously (default is '%(default)s')")
+parser.add_argument("-model",dest="model_phy",default="WAG",choices=["DAYHOFF","DCMUT","JTT","MTREV","WAG","RTREV","CPREV","VT","BLOSUM62","MTMAM"],help="This option only applies for the concatenation of protein data into phylip format. Specify the model for all partitions defined in the partition file")
 parser.add_argument("-interleave",dest="interleave",action="store_const",const="interleave",help="Specificy this option to write output files in interleave format (currently only supported for nexus files")
 parser.add_argument("-c",dest="Conversion",action="store_const",const=True,help="Used for convertion of the input files passed as arguments with the -in option. This flag precludes the usage of the -o option, as the output file name is automatically generated based on the input file name.")
 parser.add_argument("-o",dest="outfile",help="Name of the output file")
@@ -62,6 +63,7 @@ def main_parser(alignment_list):
 	output_format = arg.OutputFormat
 	output_file = arg.outfile
 	interleave = arg.interleave
+	model_phy = arg.model_phy
 	coding = "DNA"
 	
 	# Guessing input format
@@ -125,7 +127,7 @@ def main_parser(alignment_list):
 	if "fasta" in output_format:
 		output_instance.fasta(alignment_dic,conversion)
 	if "phylip" in output_format:
-		output_instance.phylip(alignment_dic,conversion)
+		output_instance.phylip(alignment_dic,model_phy,conversion)
 	if "nexus" in output_format:
 		output_instance.nexus(alignment_dic,conversion,interleave)
 	if arg.zorro != None:
