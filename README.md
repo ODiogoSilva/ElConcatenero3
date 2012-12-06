@@ -34,6 +34,11 @@ ElConcatenero3.py has the following options (which can also be consulted by typi
 									**and genetic code automatically**
                         
   -of *{nexus,phylip,fasta}*		**Format of the ouput file (default is 'nexus')**
+  
+  -model *{DAYHOFF,DCMUT,JTT,MTREV,WAG,RTREV,CPREV,VT,BLOSUM62,MTMAM}*
+									**This option only applies for the concatenation of**
+									**protein data into phylip format. Specify the model for**
+									**all partitions defined in the partition file**
                         
   -interleave						**Specificy this option to write output files in**
 									**interleave format (currently only supported for nexus**
