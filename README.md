@@ -48,6 +48,10 @@ ElConcatenero3.py has the following options (which can also be consulted by typi
 									**arguments with the -in option. This flag precludes the**
 									**usage of the -o option, as the output file name is**
 									**automatically generated based on the input file name.**
+									
+  -r REVERSE						**Reverse a concatenated file into its original single**
+									**locus alignments. A partition file similar to the one**
+									**read by RAxML must be provided.**
 
   -o *OUTFILE*            			**Name of the output file**									
  

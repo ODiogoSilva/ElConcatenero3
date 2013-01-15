@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 
-# ElConcatenero v3.1.1-0
+# ElConcatenero v3.1.2
 # Author: Diogo N Silva
-# Last update: 6/12/2012
+# Last update: 15/01/2012
 # ElConcatenero is tool to convert and concatenate several commonly used data format types. Currently, supported input formats include Nexus, FastA and Phylip. Output may be in Nexus, Phylip (wiht part file for RaXML) or FastA. Please type "ElConcatenero -h" or read the README.md file for information on usage.
 
 #  Copyright 2012 Diogo N Silva <diogo@arch>
@@ -34,6 +34,8 @@ parser.add_argument("-of",dest="OutputFormat",nargs="+",default="nexus",choices=
 parser.add_argument("-model",dest="model_phy",default="WAG",choices=["DAYHOFF","DCMUT","JTT","MTREV","WAG","RTREV","CPREV","VT","BLOSUM62","MTMAM"],help="This option only applies for the concatenation of protein data into phylip format. Specify the model for all partitions defined in the partition file")
 parser.add_argument("-interleave",dest="interleave",action="store_const",const="interleave",help="Specificy this option to write output files in interleave format (currently only supported for nexus files")
 parser.add_argument("-c",dest="Conversion",action="store_const",const=True,help="Used for convertion of the input files passed as arguments with the -in option. This flag precludes the usage of the -o option, as the output file name is automatically generated based on the input file name.")
+parser.add_argument("-r",dest="reverse",help="Reverse a concatenated file into its original single locus alignments. A partition file similar to the one read by RAxML must be provided.")
+
 parser.add_argument("-o",dest="outfile",help="Name of the output file")
 
 parser.add_argument("-g",dest="gap",default="-",help="Symbol for gap (default is '%(default)s')")
@@ -92,6 +94,15 @@ def main_parser(alignment_list):
 			zorro_code = arg.zorro_infile
 			zorro_weigths = main_instance.zorro2rax(alignment_list,zorro_code)
 	
+	# If runnning reverse concatenation mode do this and quit
+	if arg.reverse != None:
+		partitions = main_instance.get_partitions(arg.reverse)
+		alignment_list = main_instance.reverse_concatenation(alignment_storage[0], partitions)
+		output_instance = ep.writer(output_file, alignment_storage[1], coding, alignment_storage[2], alignment_storage[3],missing=missing_sym, models=model)
+		output_instance.reverse_wrapper(alignment_list, "".join(output_format))
+		print ("Reverse concatenation complete!")
+		raise SystemExit
+	
 	# Removes specified taxa, if the option was declared. Otherwise, continue with the original alignment
 	if arg.remove != None:
 		alignment_dic, taxa_order = main_instance.rm_taxa(alignment_storage[0],arg.remove)
@@ -134,10 +145,10 @@ def main_parser(alignment_list):
 		output_instance.zorro(zorro_weigths)
 		
 def main_check ():
-	if arg.Conversion == None and arg.outfile == None and arg.pickle == None:
+	if arg.Conversion == None and arg.outfile == None and arg.pickle == None and arg.reverse == None:
 		print ("ArgumentError: If you wish to concatenate provide the output file name using the '-o' option. If you wish to convert a file, specify it using the '-c' option\nExiting...")
 		raise SystemExit
-	if len(arg.infile) == 1 and arg.Conversion == None and arg.pickle == None:
+	if len(arg.infile) == 1 and arg.Conversion == None and arg.pickle == None and arg.reverse == None:
 		print ("ArgumentError: Cannot perform concatenation of a single file. Please provide additional files to concatenate, or specify the conversion '-c' option.\nExiting...")
 		raise SystemExit
 	if arg.zorro != None and len(arg.infile) == 1:

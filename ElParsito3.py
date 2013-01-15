@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-#  ElParsito.py v3.1.1-0
+#  ElParsito.py v3.1.2
 #
 #  
 #  Copyright 2012 Unknown <diogo@arch>
@@ -276,6 +276,31 @@ class SeqUtils ():
 		else:
 			print ("\n")				
 		return (main_alignment, main_taxa_order, sum(self.loci_lengths), loci_range, models)
+		
+	def get_partitions (self, partitions_file):
+		""" This function parses a file containing partitions. Only supports partitions files similar to RAxML's """
+		part_file = open(partitions_file)
+		partition_storage = []
+		for line in part_file:
+			fields = line.split(",")
+			genetic_code = fields[0]
+			partition_name = fields[1].split("=")[0]
+			partition_range_temp = fields[1].split("=")[1]
+			partition_range = partition_range_temp.strip().split("-")
+			partition_storage.append((genetic_code, partition_name, partition_range))
+		return partition_storage
+				
+	def reverse_concatenation (self, alignment, partitions):
+		""" This function divides a concatenated file according previously defined partitions """
+		partitions_storage = []
+		for genetic_code, name, part_range in partitions:
+			partition_dic = {}
+			for taxon, seq in alignment.items():
+				sub_seq = seq[int(part_range[0])-1:int(part_range[1])]
+				if sub_seq.replace("X","") != "":
+					partition_dic[taxon] = sub_seq
+			partitions_storage.append((name, genetic_code, partition_dic))
+		return partitions_storage
 	
 class writer ():
 		
@@ -297,6 +322,25 @@ class writer ():
 		self.cut_space_phy = 50
 		self.cut_space_ima2 = 8
 			
+	def reverse_wrapper (self, alignment_list,output_format):
+		""" Function that writes a list of partitions into separate files. It uses the previously defined write function of the writer class """
+		for partition in alignment_list:
+			self.output_file = partition[0].strip()
+			genetic_code = partition[1]
+			alignment = partition[2]
+			self.loci_lengths = len(list(alignment.values())[0])
+			taxa_order_ref = self.taxa_order
+			self.taxa_order = [sp for sp in self.taxa_order if sp in alignment.keys()]
+						
+			if output_format == "phylip":
+				self.phylip(alignment,conversion=True)
+			elif output_format == "fasta":
+				self.fasta(alignment,conversion=True)
+			elif output_format == "nexus":
+				self.nexus(alignment,conversion=True)
+				
+			self.taxa_order = taxa_order_ref
+	
 	def phylip (self, alignment_dic, model="WAG", conversion=None):
 		""" Writes a pre-parsed alignment dictionary into a new phylip file """
 		out_file = open(self.output_file+".phy","w")
