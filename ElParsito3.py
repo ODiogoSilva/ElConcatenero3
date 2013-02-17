@@ -28,18 +28,21 @@ def autofinder (reference_file):
 	autofind = "unknown"
 	sequence = ""
 	file_handle = open(reference_file,'r')
-     
+    
+    # Skips first empty lines, if any 
 	header = file_handle.readline()
 	while header.startswith("\n"):
 		header = next(file_handle)
      
+    # Recognition of NEXUS files is based on the existence of the string '#NEXUS' in the first non-empty line
 	if header.upper().startswith("#NEXUS"):
 		autofind = "nexus"
 		for line in file_handle:
 			if line.strip().lower() == "matrix":
 				sequence = "".join(file_handle.readline().split()[1:]).strip()
 				break
-         
+    
+    # Recognition of FASTA files is based on the existence of a ">" character as the first character of a non-empty line     
 	elif header.startswith(">"):
 		autofind = "fasta"
 		for line in file_handle:
@@ -47,7 +50,8 @@ def autofinder (reference_file):
 				sequence += line.strip()
 			elif line.strip()[0] == ">":
 				break
-         
+    
+    # Recognition of Phylip files is based on the existence of two integers separated by whitespace on the first non-empy line     
 	elif len(header.strip().split()) == 2 and header.strip().split()[0].isdigit() and header.strip().split()[1].isdigit():
 		autofind = "phylip"
 		sequence = "".join(file_handle.readline().split()[1:]).strip()
@@ -59,10 +63,10 @@ def autofinder (reference_file):
 
 def guess_code (sequence):
 	""" Function that guesses the code of the molecular sequences (i.e., DNA or Protein) based on the first sequence of a reference file """
-	sequence = sequence.upper().replace("-","")
+	sequence = sequence.upper().replace("-","") # Removes gaps from the sequence so that the frequences are not biased
 	DNA_count = sequence.count("A") + sequence.count("T") + sequence.count("G") + sequence.count("C") + sequence.count("N")
 	DNA_proportion = float(DNA_count)/float(len(sequence))
-	if DNA_proportion > 0.9:
+	if DNA_proportion > 0.9: # The 0.9 cut-off has been effective so far
 		code = ("DNA","N")
 	else:
 		code = ("Protein","X")
@@ -72,7 +76,7 @@ class SeqUtils ():
 	
 	def rm_illegal (self,string):
 		""" Function that removes illegal characters from taxa names """
-		illegal_chars = [":",",",")","(",";","[","]","'", '"']
+		illegal_chars = [":",",",")","(",";","[","]","'", '"'] # Additional illegal characters are added here 
 		clean_name = "".join([char for char in string if char not in illegal_chars])
 		if string != clean_name:
 			print ("\nWARNING: Removed illegal characters from the taxa %s" % string)
