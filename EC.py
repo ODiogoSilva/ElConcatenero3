@@ -46,11 +46,12 @@ class EC (QtGui.QMainWindow):
         
         
 		# Status bar
+		self.statusBar()
 
 	def createMenus (self):
 		""" Creation of the menus for the menu bar """
 		# FILE MENU
-		openFile = QtGui.QAction(QtGui.QIcon('open.png'), 'Open', self)
+		openFile = QtGui.QAction('Open', self)
 		openFile.setShortcut('Ctrl+O')
 		openFile.setStatusTip('Open new File')
 		#openFile.triggered.connect(self.showDialog)
@@ -60,14 +61,23 @@ class EC (QtGui.QMainWindow):
 		fileMenu.addAction(openFile)
 		
 		# MODE MENU
-		
-		concatenation = QtGui.QAction(QtGui.QIcon('open.png'),'Concatenation',self)
-		concatenation.setShortcut('Ctrl+Alt+C')
+		concatenation = QtGui.QAction('Concatenation',self)
+		concatenation.setShortcut('Ctrl+E')
 		concatenation.setStatusTip('Opens the concatenation window')
+		concatenation.triggered.connect(self.connectConcatenation)
+		
+		conversion = QtGui.QAction('Conversion',self)
+		conversion.setShortcut('Ctrl+D')
+		conversion.setStatusTip('Opens the conversion window')
 		
 		modeMenu = menubar.addMenu('&Mode')
 		modeMenu.addAction(concatenation)
-			
+		modeMenu.addAction(conversion)
+	
+	def connectConcatenation (self):
+		self.conc = Concatenation()
+		self.conc.show()
+	
 	def center(self):
 		""" Function used to center the main window in the Desktop environment """
 		qr = self.frameGeometry()
@@ -75,6 +85,8 @@ class EC (QtGui.QMainWindow):
 		qr.moveCenter(cp)
 		self.move(qr.topLeft())
 
+
+	## Closing event functions 
 	def closeEvent(self, event):
 		""" Generates an event at closing prompting the user about closing the program """
 		reply = QtGui.QMessageBox.question(self, 'Message',
@@ -90,6 +102,16 @@ class EC (QtGui.QMainWindow):
 		""" Exit the program using the 'ESC' key """
 		if e.key() == QtCore.Qt.Key_Escape:
 			self.close()
+			
+class Concatenation (QtGui.QWidget):
+	def __init__(self, *args):
+		QtGui.QWidget.__init__(self, *args)
+		
+		## Geometry
+		self.setGeometry(300, 300, 290, 150)
+		## Header
+		self.setWindowTitle('Concatenation') 
+		self.show()
 
 def main():
     
