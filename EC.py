@@ -44,7 +44,6 @@ class EC (QtGui.QMainWindow):
 		# Menu bar
 		self.createMenus()
         
-        
 		# Status bar
 		self.statusBar()
 
@@ -61,21 +60,22 @@ class EC (QtGui.QMainWindow):
 		fileMenu.addAction(openFile)
 		
 		# MODE MENU
-		concatenation = QtGui.QAction('Concatenation',self)
-		concatenation.setShortcut('Ctrl+E')
-		concatenation.setStatusTip('Opens the concatenation window')
-		concatenation.triggered.connect(self.connectConcatenation)
+		self.concatenation = QtGui.QAction('Concatenation',self)
+		self.concatenation.setShortcut('Ctrl+E')
+		self.concatenation.setStatusTip('Opens the concatenation window')
+		self.concatenation.triggered.connect(self.connectConcatenation)
 		
-		conversion = QtGui.QAction('Conversion',self)
-		conversion.setShortcut('Ctrl+D')
-		conversion.setStatusTip('Opens the conversion window')
+		self.conversion = QtGui.QAction('Conversion',self)
+		self.conversion.setShortcut('Ctrl+D')
+		self.conversion.setStatusTip('Opens the conversion window')
 		
 		modeMenu = menubar.addMenu('&Mode')
-		modeMenu.addAction(concatenation)
-		modeMenu.addAction(conversion)
+		modeMenu.addAction(self.concatenation)
+		modeMenu.addAction(self.conversion)
 	
+	## Connections
 	def connectConcatenation (self):
-		self.conc = Concatenation()
+		self.conc = Concatenation_widget()
 		self.conc.show()
 	
 	def center(self):
@@ -103,7 +103,7 @@ class EC (QtGui.QMainWindow):
 		if e.key() == QtCore.Qt.Key_Escape:
 			self.close()
 			
-class Concatenation (QtGui.QWidget):
+class Concatenation_widget (QtGui.QWidget):
 	def __init__(self, *args):
 		QtGui.QWidget.__init__(self, *args)
 		
@@ -111,7 +111,31 @@ class Concatenation (QtGui.QWidget):
 		self.setGeometry(300, 300, 290, 150)
 		## Header
 		self.setWindowTitle('Concatenation') 
+		
+		## Buttons
+		selectFiles = QtGui.QPushButton('Select input files', self)
+		selectFiles.clicked.connect(self.showDialog)
+		
+		## Labels
+		fileNumber = ""
+		fileNumberLabel = QtGui.QLabel(fileNumber,self)
+		
+		## Layouts
+		hbox = QtGui.QHBoxLayout()
+		hbox.addStretch(1)
+		hbox.addWidget(selectFiles)
+		
+		vbox = QtGui.QVBoxLayout()
+		vbox.addStretch(-2)
+		vbox.addLayout(hbox)
+		
+		self.setLayout(vbox)
+		
 		self.show()
+
+	def showDialog(self):
+
+		fname = QtGui.QFileDialog.getOpenFileNames(self, 'Select Files', '/home')	
 
 def main():
     

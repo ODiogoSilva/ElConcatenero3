@@ -156,7 +156,7 @@ class SeqUtils ():
 			weigths_storage += [round(float(weigth.strip())) for weigth in zorro_handle]
 		return weigths_storage
 
-	def read_alignment (self, input_alignment, alignment_format, size_check=True):
+	def read_alignment (self, input_alignment, alignment_format, size_check=True, char_check=True):
 		""" ONLY FOR SINGLE FILE/LOCI INPUT: Function that parses an input file alignment and returns a dictionary with the taxa as keys and sequences as values """ 
 		
 		self.check_format (input_alignment, alignment_format)
@@ -174,7 +174,8 @@ class SeqUtils ():
 			for line in file_handle:
 				if line != "":
 					taxa = line.split()[0].replace(" ","")
-					taxa = self.rm_illegal(taxa)
+					if char_check == True:
+						taxa = self.rm_illegal(taxa)
 					taxa_order.append(taxa)
 					sequence = line.split()[1].strip()
 					alignment_storage[taxa] = sequence
@@ -183,8 +184,9 @@ class SeqUtils ():
 		elif alignment_format == "fasta":
 			for line in file_handle:
 				if line.strip().startswith(">"):
-					taxa = line[1:].strip().replace(" ","_")
-					taxa = self.rm_illegal(taxa)
+					taxa = line[1:].strip()#.replace(" ","_")
+					if char_check == True:			
+						taxa = self.rm_illegal(taxa)
 					taxa_order.append(taxa)
 					alignment_storage[taxa] = ""
 				else:
@@ -201,7 +203,8 @@ class SeqUtils ():
 					counter = 2
 				elif line.strip() != "" and counter == 1: # Start parsing here
 					taxa = line.strip().split()[0].replace(" ","")
-					taxa = self.rm_illegal(taxa)
+					if char_check == True:
+						taxa = self.rm_illegal(taxa)
 					if taxa not in taxa_order: # Prevents duplications in the list when the input format is interleave
 						taxa_order.append(taxa)
 					if taxa in alignment_storage: # This accomodates for the interleave format
