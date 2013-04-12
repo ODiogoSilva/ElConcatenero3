@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-#  ElParsito.py v3.1.2
+#  ElParsito.py v3.1.3
 #
 #  
 #  Copyright 2012 Unknown <diogo@arch>
@@ -46,9 +46,9 @@ def autofinder (reference_file):
 	elif header.startswith(">"):
 		autofind = "fasta"
 		for line in file_handle:
-			if line.strip()[0] != ">":
+			if line.strip() != "" and line.strip()[0] != ">":
 				sequence += line.strip()
-			elif line.strip()[0] == ">":
+			elif line.strip() != "" and line.strip()[0] == ">":
 				break
     
     # Recognition of Phylip files is based on the existence of two integers separated by whitespace on the first non-empy line     
@@ -149,7 +149,7 @@ class SeqUtils ():
 		# Creates a dictionary with the sequences, and respective length, of different length
 		difLength = dict((key,value) for key, value in alignment_dic.items() if len(commonSeq) != len(value))
 		if difLength != {}:
-			print ("\nWARNING: Unequal sequence lenght detected in %s" % current_file)
+			print ("\nWARNING: Unequal sequence lenght detected in %s\n%s" % (current_file,print(difLength)))
 
 	def zorro2rax (self, alignment_file_list, zorro_sufix="_zorro.out"):
 		""" Function that converts the floating point numbers contained in the original zorro output files into intergers that can be interpreted by RAxML. If multiple alignment files are provided, it also concatenates them in the same order """
@@ -165,23 +165,25 @@ class SeqUtils ():
 		
 		self.check_format (input_alignment, alignment_format)
 
-		alignment_storage = {} # Save the taxa and their respective sequences
+		self.alignment_storage = {} # Save the taxa and their respective sequences
 		taxa_order = [] # Save taxa names to maintain initial order
-		model = [] # Only applies for nexus format. It stores any potential substitution model at the end of the file
+		self.model = [] # Only applies for nexus format. It stores any potential substitution model at the end of the file
 		
 		file_handle = open(input_alignment)
 		
 		# PARSING PHYLIP FORMAT
 		if alignment_format == "phylip":
 			header = file_handle.readline().split() # Get the number of taxa and sequence length from the file header
-			loci_lengths = int(header[1])
+			self.loci_lengths = int(header[1])
 			for line in file_handle:
 				if line != "":
 					taxa = line.split()[0].replace(" ","")
 					taxa = self.rm_illegal(taxa)
 					taxa_order.append(taxa)
 					sequence = line.split()[1].strip()
-					alignment_storage[taxa] = sequence
+					self.alignment_storage[taxa] = sequence
+					
+					## TO DO: Read phylip interleave
 			
 		# PARSING FASTA FORMAT
 		elif alignment_format == "fasta":
@@ -190,10 +192,10 @@ class SeqUtils ():
 					taxa = line[1:].strip().replace(" ","_")
 					taxa = self.rm_illegal(taxa)
 					taxa_order.append(taxa)
-					alignment_storage[taxa] = ""
-				else:
-					alignment_storage[taxa] += line.strip()
-			loci_lengths = len(list(alignment_storage.values())[0])
+					self.alignment_storage[taxa] = ""
+				elif line.strip() != "":
+					self.alignment_storage[taxa] += line.strip()
+			self.loci_lengths = len(list(self.alignment_storage.values())[0])
 			
 		# PARSING NEXUS FORMAT
 		elif alignment_format == "nexus":
@@ -208,22 +210,22 @@ class SeqUtils ():
 					taxa = self.rm_illegal(taxa)
 					if taxa not in taxa_order: # Prevents duplications in the list when the input format is interleave
 						taxa_order.append(taxa)
-					if taxa in alignment_storage: # This accomodates for the interleave format
-						alignment_storage[taxa] += "".join(line.strip().split()[1:])
+					if taxa in self.alignment_storage: # This accomodates for the interleave format
+						self.alignment_storage[taxa] += "".join(line.strip().split()[1:])
 					else:
-						alignment_storage[taxa] = "".join(line.strip().split()[1:])
+						self.alignment_storage[taxa] = "".join(line.strip().split()[1:])
 						
 				# This bit of code will extract a potential substitution model from the file
 				elif counter == 2 and line.lower().strip().startswith("lset"):
-					model.append(line.strip())
+					self.model.append(line.strip())
 				elif counter == 2 and line.lower().strip().startswith("prset"):
-					model.append(line.strip())
+					self.model.append(line.strip())
 
-			loci_lengths = len(list(alignment_storage.values())[0])
+			self.loci_lengths = len(list(self.alignment_storage.values())[0])
 		
 		# Checks the size consistency of the alignment
 		if size_check == True:
-			self.check_sizes (alignment_storage, input_alignment)
+			self.check_sizes (self.alignment_storage, input_alignment)
 		
 		# Checks for duplicate taxa
 		if len(taxa_order) != len(set(taxa_order)):
@@ -231,14 +233,26 @@ class SeqUtils ():
 			print ("WARNING: Duplicated taxa have been found in file %s (%s). Please correct this problem and re-run the program\n" %(input_alignment,", ".join(taxa)))
 			raise SystemExit
 		
-		return (alignment_storage, taxa_order, loci_lengths, model)
+		return (self.alignment_storage, taxa_order, self.loci_lengths, self.model)
+		
+	def get_alignment():
+		""" Function that returns only the alignment storage """
+		return self.alignment_storage
+		
+	def get_loci_lengths():
+		""" Function that returns the loci lengths """
+		return loci_lengths
+		
+	def get_model():
+		""" Function that returns the model for the Nexus input format """
+		return model
 		
 	def read_alignments (self, input_list, alignment_format, missing = "X", progress_stat=True):
 		""" Function that parses multiple alignment/loci files and returns a dictionary with the taxa as keys and sequences as values as well as two integers corresponding to the number of taxa and sequence length """
 		
 		self.loci_lengths = [] # Saves the sequence lengths of the 
 		loci_range = [] # Saves the loci names as keys and their range as values
-		models = [] 
+		models = self.models
 		main_taxa_order = []
 		
 		for infile in input_list:
