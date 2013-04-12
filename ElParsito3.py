@@ -46,9 +46,9 @@ def autofinder (reference_file):
 	elif header.startswith(">"):
 		autofind = "fasta"
 		for line in file_handle:
-			if line.strip()[0] != ">":
+			if line.strip() != "" and line.strip()[0] != ">":
 				sequence += line.strip()
-			elif line.strip()[0] == ">":
+			elif line.strip() != "" and line.strip()[0] == ">":
 				break
     
     # Recognition of Phylip files is based on the existence of two integers separated by whitespace on the first non-empy line     
@@ -193,7 +193,7 @@ class SeqUtils ():
 					taxa = self.rm_illegal(taxa)
 					taxa_order.append(taxa)
 					self.alignment_storage[taxa] = ""
-				else:
+				elif line.strip() != "":
 					self.alignment_storage[taxa] += line.strip()
 			self.loci_lengths = len(list(self.alignment_storage.values())[0])
 			
