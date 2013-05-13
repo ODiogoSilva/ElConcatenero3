@@ -101,7 +101,7 @@ def main_parser(alignment_list):
 		output_instance = ep.writer(output_file, alignment_storage[1], coding, alignment_storage[2], alignment_storage[3],missing=missing_sym, models=model)
 		output_instance.reverse_wrapper(alignment_list, "".join(output_format))
 		print ("Reverse concatenation complete!")
-		raise SystemExit
+		return 0
 	
 	# Removes specified taxa, if the option was declared. Otherwise, continue with the original alignment
 	if arg.remove != None:
