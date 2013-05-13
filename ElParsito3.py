@@ -60,6 +60,23 @@ def autofinder (reference_file):
 	code = guess_code (sequence)
 	
 	return autofind, code
+	
+def partition_format (partition_file):
+	""" Tries to guess the format of the partition file (Whether it is Nexus of RAxML's """
+	file_handle = open(partition_file)
+	
+	# Skips first empty lines, if any 
+	header = file_handle.readline()
+	while header.startswith("\n"):
+		header = next(file_handle)
+		
+	fields = header.split()
+	if fields[0].lower() == "charset":
+		p_format = "nexus"
+	else:
+		p_format = "phylip"
+	
+	return p_format
 
 def guess_code (sequence):
 	""" Function that guesses the code of the molecular sequences (i.e., DNA or Protein) based on the first sequence of a reference file """
@@ -297,20 +314,35 @@ class SeqUtils ():
 		
 	def get_partitions (self, partitions_file):
 		""" This function parses a file containing partitions. Only supports partitions files similar to RAxML's """
+		
+		p_format = partition_format (partitions_file)
 		part_file = open(partitions_file)
 		partition_storage = []
-		for line in part_file:
-			fields = line.split(",")
-			genetic_code = fields[0]
-			partition_name = fields[1].split("=")[0]
-			partition_range_temp = fields[1].split("=")[1]
-			partition_range = partition_range_temp.strip().split("-")
-			partition_storage.append((genetic_code, partition_name, partition_range))
+		
+		if p_format == "phylip":
+			for line in part_file:
+				fields = line.split(",")
+				genetic_code = fields[0]
+				partition_name = fields[1].split("=")[0]
+				partition_range_temp = fields[1].split("=")[1]
+				partition_range = partition_range_temp.strip().split("-")
+				partition_storage.append((genetic_code, partition_name, partition_range))
+				
+		elif p_format == "nexus":
+			for line in part_file:
+				fields = line.split("=")
+				partition_name = fields[0].split()[1]
+				partition_range = fields[1].replace(";","").strip().split("-")
+				partition_storage.append((partition_name, partition_range))
+			
 		return partition_storage
 				
 	def reverse_concatenation (self, alignment, partitions):
 		""" This function divides a concatenated file according previously defined partitions """
 		partitions_storage = []
+		if len(partitions[0]) == 2:
+			print ("Partitions file not in phylip format. Perhaps Nexus? Exiting.")
+			raise SystemExit
 		for genetic_code, name, part_range in partitions:
 			partition_dic = {}
 			for taxon, seq in alignment.items():
@@ -366,6 +398,18 @@ class writer ():
 		for part in partition_list:
 			out_file.write("charset %s = %s;\n" % (part[1],"-".join(part[2])))
 		out_file.close()
+		return 0
+		
+	def write_partitions (self, partition_list, model="WAG"):
+		""" writes a partition list in RAxML format from a charset block """
+		out_file = open(self.output_file+".part.File","w")
+		
+		for part in partition_list:
+			partition_name = part[0]
+			partition_range = "-".join([x for x in part[1]])
+			out_file.write("%s, %s = %s\n" % (model, part[0], partition_range))
+		out_file.close()
+		
 		return 0
 	
 	def phylip (self, alignment_dic, model="WAG", conversion=None):

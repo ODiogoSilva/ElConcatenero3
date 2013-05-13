@@ -42,6 +42,7 @@ alternative.add_argument("-r",dest="reverse",help="Reverse a concatenated file i
 alternative.add_argument("-z",dest="zorro",action="store_const",const=True,help="Use this option if you wish to concatenate auxiliary Zorro files associated with each alignment. Note that the auxiliary files must have the same prefix of the alignment file, with the addition of '_zorro.out'")
 alternative.add_argument("-zfile",dest="zorro_infile",nargs="*",default="_zorro.out",help="Provide the sufix for the concatenated zorro file (default is '%(default)s')")
 alternative.add_argument("-charset",dest="charset",help="Format the partition file of RAxML into a charset analogous to the Nexus block. A partition file similar to the one read by RAxML must be provided.")
+alternative.add_argument("-partfile",dest="partfile",help="Format the charset analogous to the Nexus block into the partition file of RAxML")
 
 # Formatting options
 formatting = parser.add_argument_group("Formatting options")
@@ -119,6 +120,13 @@ def main_parser(alignment_list):
 		output_instance.write_charset(partitions)
 		print ("Partitions formatting done!")
 		return 0
+		
+	if arg.partfile != None:
+		partitions = main_instance.get_partitions(arg.partfile)
+		output_instance = ep.writer(output_file, alignment_storage[1], coding, alignment_storage[2], alignment_storage[3],missing=missing_sym, models=model)
+		output_instance.write_partitions(partitions)
+		print ("Partitions formatting done!")
+		return 0
 	
 	# Removes specified taxa, if the option was declared. Otherwise, continue with the original alignment
 	if arg.remove != None:
@@ -162,10 +170,10 @@ def main_parser(alignment_list):
 		output_instance.zorro(zorro_weigths)
 		
 def main_check ():
-	if arg.Conversion == None and arg.outfile == None and arg.pickle == None and arg.reverse == None and arg.charset == None:
+	if arg.Conversion == None and arg.outfile == None and arg.pickle == None and arg.reverse == None and arg.charset == None and arg.partfile == None:
 		print ("ArgumentError: If you wish to concatenate provide the output file name using the '-o' option. If you wish to convert a file, specify it using the '-c' option\nExiting...")
 		raise SystemExit
-	if len(arg.infile) == 1 and arg.Conversion == None and arg.pickle == None and arg.reverse == None and arg.charset == None:
+	if len(arg.infile) == 1 and arg.Conversion == None and arg.pickle == None and arg.reverse == None and arg.charset == None and arg.partfile == None:
 		print ("ArgumentError: Cannot perform concatenation of a single file. Please provide additional files to concatenate, or specify the conversion '-c' option.\nExiting...")
 		raise SystemExit
 	if arg.zorro != None and len(arg.infile) == 1:
