@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-#  ElParsito.py v3.1.3
+#  ElParsito.py v3.1.4
 #
 #  
 #  Copyright 2012 Unknown <diogo@arch>
@@ -149,7 +149,7 @@ class SeqUtils ():
 		# Creates a dictionary with the sequences, and respective length, of different length
 		difLength = dict((key,value) for key, value in alignment_dic.items() if len(commonSeq) != len(value))
 		if difLength != {}:
-			print ("\nWARNING: Unequal sequence lenght detected in %s\n%s" % (current_file,print(difLength)))
+			print ("\nWARNING: Unequal sequence lenght detected in %s" % (current_file))
 
 	def zorro2rax (self, alignment_file_list, zorro_sufix="_zorro.out"):
 		""" Function that converts the floating point numbers contained in the original zorro output files into intergers that can be interpreted by RAxML. If multiple alignment files are provided, it also concatenates them in the same order """
@@ -224,8 +224,8 @@ class SeqUtils ():
 			self.loci_lengths = len(list(self.alignment_storage.values())[0])
 		
 		# Checks the size consistency of the alignment
-		if size_check == True:
-			self.check_sizes (self.alignment_storage, input_alignment)
+		#if size_check == True:
+		#	self.check_sizes (self.alignment_storage, input_alignment)
 		
 		# Checks for duplicate taxa
 		if len(taxa_order) != len(set(taxa_order)):
@@ -241,18 +241,18 @@ class SeqUtils ():
 		
 	def get_loci_lengths():
 		""" Function that returns the loci lengths """
-		return loci_lengths
+		return self.loci_lengths
 		
 	def get_model():
 		""" Function that returns the model for the Nexus input format """
-		return model
+		return self.model
 		
 	def read_alignments (self, input_list, alignment_format, missing = "X", progress_stat=True):
 		""" Function that parses multiple alignment/loci files and returns a dictionary with the taxa as keys and sequences as values as well as two integers corresponding to the number of taxa and sequence length """
 		
-		self.loci_lengths = [] # Saves the sequence lengths of the 
+		self.multiple_loci_lengths = [] # Saves the sequence lengths of the 
 		loci_range = [] # Saves the loci names as keys and their range as values
-		models = self.models
+		self.models = []
 		main_taxa_order = []
 		
 		for infile in input_list:
@@ -266,13 +266,13 @@ class SeqUtils ():
 			
 			# If input format is nexus, save the substution model, if any
 			if alignment_format == "nexus" and model != []:
-				models.append(model)
+				self.models.append(model)
 
 			# Algorithm that fills absent taxa with missing data
-			if self.loci_lengths == []:
+			if self.multiple_loci_lengths == []:
 				main_alignment = current_alignment # Create the main alignment dictionary from the first current alignment and never visit this statement again
 				main_taxa_order = taxa_order
-				self.loci_lengths.append(current_sequence_len)
+				self.multiple_loci_lengths.append(current_sequence_len)
 				loci_range.append((infile.split(".")[0],"1-%s" % (current_sequence_len))) # Saving the range for the first loci
 	
 			else:
@@ -280,12 +280,12 @@ class SeqUtils ():
 					if taxa in main_alignment: 
 						main_alignment[taxa] += sequence # Append the sequence from the current alignment to the respective taxa in the main alignment
 					elif taxa not in main_alignment:
-						main_alignment[taxa] = missing*sum(self.loci_lengths)+sequence # If the taxa does not yet exist in the main alignment, create the new entry with a sequence of 'n' characters of the same size as the length of the missed loci and the sequence from the current alignment
+						main_alignment[taxa] = missing*sum(self.multiple_loci_lengths)+sequence # If the taxa does not yet exist in the main alignment, create the new entry with a sequence of 'n' characters of the same size as the length of the missed loci and the sequence from the current alignment
 						main_taxa_order.append(taxa)
 
 				# Saving the range for the subsequent loci
-				loci_range.append((infile.split(".")[0],"%s-%s" % (sum(self.loci_lengths)+1, sum(self.loci_lengths)+current_sequence_len)))
-				self.loci_lengths.append(current_sequence_len)
+				loci_range.append((infile.split(".")[0],"%s-%s" % (sum(self.multiple_loci_lengths)+1, sum(self.multiple_loci_lengths)+current_sequence_len)))
+				self.multiple_loci_lengths.append(current_sequence_len)
 				
 				# Check if any taxa from the main alignment are missing from the current alignment. If yes, fill them with 'n'
 				for taxa in main_alignment.keys():
@@ -293,7 +293,7 @@ class SeqUtils ():
 						main_alignment[taxa] += missing*current_sequence_len
 		else:
 			print ("\n")				
-		return (main_alignment, main_taxa_order, sum(self.loci_lengths), loci_range, models)
+		return (main_alignment, main_taxa_order, sum(self.multiple_loci_lengths), loci_range, self.models)
 		
 	def get_partitions (self, partitions_file):
 		""" This function parses a file containing partitions. Only supports partitions files similar to RAxML's """
@@ -319,6 +319,7 @@ class SeqUtils ():
 					partition_dic[taxon] = sub_seq
 			partitions_storage.append((name, genetic_code, partition_dic))
 		return partitions_storage
+
 	
 class writer ():
 		
@@ -358,6 +359,14 @@ class writer ():
 				self.nexus(alignment,conversion=True)
 				
 			self.taxa_order = taxa_order_ref
+	
+	def write_charset (self, partition_list):
+		""" Writes a charset of the partitions to a new file based on the output file name. The input is a partitions file as read with the get_partitions function """
+		out_file = open(self.output_file+".charset","w")
+		for part in partition_list:
+			out_file.write("charset %s = %s;\n" % (part[1],"-".join(part[2])))
+		out_file.close()
+		return 0
 	
 	def phylip (self, alignment_dic, model="WAG", conversion=None):
 		""" Writes a pre-parsed alignment dictionary into a new phylip file """
