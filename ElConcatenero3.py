@@ -73,11 +73,30 @@ def main_parser(alignment_list):
 	conversion = arg.Conversion
 	input_format = arg.InputFormat
 	output_format = arg.OutputFormat
-	output_file = arg.outfile
+	outfile = arg.outfile
 	interleave = arg.interleave
 	model_phy = arg.model_phy
-	coding = "DNA"
-	
+	coding = "DNA"	
+	# Creating main instance of the parser
+	main_instance = ep.SeqUtils ()
+
+	# If just converting the partition file format do this and exit
+	if arg.charset != None:
+		partitions = main_instance.get_partitions(arg.charset)
+		output_instance = ep.writer()
+		output_instance.define_args(output_file = outfile)
+		output_instance.write_charset(partitions)
+		print ("Partitions formatting done!")
+		return 0
+		
+	if arg.partfile != None:
+		partitions = main_instance.get_partitions(arg.partfile)
+		output_instance = ep.writer()
+		output_instance.define_args(output_file = outfile)
+		output_instance.write_partitions(partitions)
+		print ("Partitions formatting done!")
+		return 0
+
 	# Guessing input format
 	if arg.InputFormat == "guess":
 		auto_format = ep.autofinder (alignment_list[0])
@@ -88,9 +107,6 @@ def main_parser(alignment_list):
 			print ("Input format set to %s.\nGenetic code set to %s." % (auto_format[0],auto_format[1][0]))
 		else:
 			print ("Input format could not be determined. Falling back to default values...")
-		
-	# Creating main instance of the parser
-	main_instance = ep.SeqUtils ()
 	
 	# Parsing input file(s)
 	if len(alignment_list) == 1:
@@ -108,25 +124,12 @@ def main_parser(alignment_list):
 	if arg.reverse != None:
 		partitions = main_instance.get_partitions(arg.reverse)
 		alignment_list = main_instance.reverse_concatenation(alignment_storage[0], partitions)
-		output_instance = ep.writer(output_file, alignment_storage[1], coding, alignment_storage[2], alignment_storage[3],missing=missing_sym, models=model)
+		output_instance = ep.writer() # Initiating main output instance
+		output_instance.define_args(outfile, alignment_storage[1], coding, alignment_storage[2], alignment_storage[3],missing=missing_sym, models=model) # Providing main arguments for the output instance
 		output_instance.reverse_wrapper(alignment_list, "".join(output_format))
 		print ("Reverse concatenation complete!")
 		return 0
-	
-	# If just converting the partition file format do this
-	if arg.charset != None:
-		partitions = main_instance.get_partitions(arg.charset)
-		output_instance = ep.writer(output_file, alignment_storage[1], coding, alignment_storage[2], alignment_storage[3],missing=missing_sym, models=model)
-		output_instance.write_charset(partitions)
-		print ("Partitions formatting done!")
-		return 0
-		
-	if arg.partfile != None:
-		partitions = main_instance.get_partitions(arg.partfile)
-		output_instance = ep.writer(output_file, alignment_storage[1], coding, alignment_storage[2], alignment_storage[3],missing=missing_sym, models=model)
-		output_instance.write_partitions(partitions)
-		print ("Partitions formatting done!")
-		return 0
+
 	
 	# Removes specified taxa, if the option was declared. Otherwise, continue with the original alignment
 	if arg.remove != None:
@@ -147,17 +150,18 @@ def main_parser(alignment_list):
 	
 	# Defining output file name
 	if arg.Conversion == None and arg.outfile != None:
-		output_file = "".join(arg.outfile)
+		outfile = "".join(arg.outfile)
 	elif arg.Conversion != None and arg.outfile != None:
-		output_file = "".join(arg.outfile)
+		outfile = "".join(arg.outfile)
 	elif arg.Conversion != None and arg.outfile == None:
 		if input_format in output_format:
-			output_file = "".join(alignment_list).split(".")[0]+"_conv"
+			outfile = "".join(alignment_list).split(".")[0]+"_conv"
 		else:
-			output_file = "".join(alignment_list).split(".")[0]
+			outfile = "".join(alignment_list).split(".")[0]
 					
 	# Creating main output instance
-	output_instance = ep.writer(output_file, taxa_order, coding, alignment_storage[2], alignment_storage[3],missing=missing_sym, models=model)
+	output_instance = ep.writer()
+	output_instance.define_args(outfile, taxa_order, coding, alignment_storage[2], alignment_storage[3],missing=missing_sym, models=model)
 	
 	# Creating output file(s)
 	if "fasta" in output_format:
@@ -170,15 +174,19 @@ def main_parser(alignment_list):
 		output_instance.zorro(zorro_weigths)
 		
 def main_check ():
-	if arg.Conversion == None and arg.outfile == None and arg.pickle == None and arg.reverse == None and arg.charset == None and arg.partfile == None:
+	if arg.charset != None or arg.partfile != None:
+		return 0
+	if arg.Conversion == None and arg.outfile == None and arg.pickle == None and arg.reverse == None:
 		print ("ArgumentError: If you wish to concatenate provide the output file name using the '-o' option. If you wish to convert a file, specify it using the '-c' option\nExiting...")
 		raise SystemExit
-	if len(arg.infile) == 1 and arg.Conversion == None and arg.pickle == None and arg.reverse == None and arg.charset == None and arg.partfile == None:
+	elif len(arg.infile) == 1 and arg.Conversion == None and arg.pickle == None and arg.reverse == None:
 		print ("ArgumentError: Cannot perform concatenation of a single file. Please provide additional files to concatenate, or specify the conversion '-c' option.\nExiting...")
 		raise SystemExit
-	if arg.zorro != None and len(arg.infile) == 1:
+	elif arg.zorro != None and len(arg.infile) == 1:
 		print ("ArgumentError: The '-z' option cannot be invoked when only a single input file is provided. This option is reserved for concatenation of multiple alignment files\nExiting...")
 		raise SystemExit
+	else:
+		return 0
 				
 def main():
 	main_check()

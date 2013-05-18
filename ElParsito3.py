@@ -313,7 +313,7 @@ class SeqUtils ():
 		return (main_alignment, main_taxa_order, sum(self.multiple_loci_lengths), loci_range, self.models)
 		
 	def get_partitions (self, partitions_file):
-		""" This function parses a file containing partitions. Only supports partitions files similar to RAxML's """
+		""" This function parses a file containing partitions. Supports partitions files similar to RAxML's and NEXUS charset blocks """
 		
 		p_format = partition_format (partitions_file)
 		part_file = open(partitions_file)
@@ -354,8 +354,8 @@ class SeqUtils ():
 
 	
 class writer ():
-		
-	def __init__ (self, output_file, taxa_order, coding, loci_lengths, loci_range=None, gap = "-", missing = "n", conversion = None, models = []):
+				
+	def define_args (self, output_file=None, taxa_order=None, coding=None, loci_lengths=None, loci_range=None, gap = "-", missing = "n", conversion = None, models = []):
 		self.output_file = output_file
 		self.taxa_order = taxa_order
 		self.coding = coding
@@ -372,7 +372,7 @@ class writer ():
 		self.cut_space_nex = 50
 		self.cut_space_phy = 50
 		self.cut_space_ima2 = 8
-			
+		
 	def reverse_wrapper (self, alignment_list,output_format):
 		""" Function that writes a list of partitions into separate files. It uses the previously defined write function of the writer class """
 		for partition in alignment_list:
