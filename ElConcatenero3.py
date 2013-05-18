@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-# ElConcatenero v3.1.4
+# ElConcatenero v3.1.5
 # Author: Diogo N Silva
 # Last update: 15/01/2012
 # ElConcatenero is tool to convert and concatenate several commonly used data format types. Currently, supported input formats include Nexus, FastA and Phylip. Output may be in Nexus, Phylip (wiht part file for RaXML) or FastA. Please type "ElConcatenero -h" or read the README.md file for information on usage.
@@ -76,10 +76,12 @@ def main_parser(alignment_list):
 	outfile = arg.outfile
 	interleave = arg.interleave
 	model_phy = arg.model_phy
-	coding = "DNA"	
+	coding = "DNA"
+		
 	# Creating main instance of the parser
 	main_instance = ep.SeqUtils ()
 
+	# The input file at this stage is not necessary
 	# If just converting the partition file format do this and exit
 	if arg.charset != None:
 		partitions = main_instance.get_partitions(arg.charset)
@@ -97,9 +99,10 @@ def main_parser(alignment_list):
 		print ("Partitions formatting done!")
 		return 0
 
+	# From here, the input file is mandatory
 	# Guessing input format
 	if arg.InputFormat == "guess":
-		auto_format = ep.autofinder (alignment_list[0])
+		auto_format = ep.autofinder (alignment_list[0]) # The script will guess the input format of the first alignment in the list
 		if auto_format[0] != "unknown":
 			input_format = auto_format[0]
 			coding = auto_format[1][0]
@@ -130,7 +133,6 @@ def main_parser(alignment_list):
 		print ("Reverse concatenation complete!")
 		return 0
 
-	
 	# Removes specified taxa, if the option was declared. Otherwise, continue with the original alignment
 	if arg.remove != None:
 		alignment_dic, taxa_order = main_instance.rm_taxa(alignment_storage[0],arg.remove)
