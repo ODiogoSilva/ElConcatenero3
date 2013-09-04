@@ -95,7 +95,7 @@ def main_parser(alignment_list):
 		partitions = main_instance.get_partitions(arg.partfile)
 		output_instance = ep.writer()
 		output_instance.define_args(output_file = outfile)
-		output_instance.write_partitions(partitions)
+		output_instance.write_partitions(partitions,model=arg.model_phy)
 		print ("Partitions formatting done!")
 		return 0
 
