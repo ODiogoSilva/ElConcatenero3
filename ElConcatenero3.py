@@ -176,17 +176,25 @@ def main_parser(alignment_list):
 		output_instance.zorro(zorro_weigths)
 		
 def main_check ():
+	if arg.charset != None and arg.outfile == None:
+		print ("ArgmentError: An output file must be provided with option '-o'\nExiting...")
+		raise SystemExit
+		
 	if arg.charset != None or arg.partfile != None:
 		return 0
+		
 	if arg.Conversion == None and arg.outfile == None and arg.pickle == None and arg.reverse == None:
 		print ("ArgumentError: If you wish to concatenate provide the output file name using the '-o' option. If you wish to convert a file, specify it using the '-c' option\nExiting...")
 		raise SystemExit
-	elif len(arg.infile) == 1 and arg.Conversion == None and arg.pickle == None and arg.reverse == None:
+		
+	if len(arg.infile) == 1 and arg.Conversion == None and arg.pickle == None and arg.reverse == None:
 		print ("ArgumentError: Cannot perform concatenation of a single file. Please provide additional files to concatenate, or specify the conversion '-c' option.\nExiting...")
 		raise SystemExit
-	elif arg.zorro != None and len(arg.infile) == 1:
+		
+	if arg.zorro != None and len(arg.infile) == 1:
 		print ("ArgumentError: The '-z' option cannot be invoked when only a single input file is provided. This option is reserved for concatenation of multiple alignment files\nExiting...")
 		raise SystemExit
+
 	else:
 		return 0
 				
