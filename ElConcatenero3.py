@@ -46,7 +46,7 @@ alternative.add_argument("-partfile",dest="partfile",help="Format the charset an
 
 # Formatting options
 formatting = parser.add_argument_group("Formatting options")
-formatting.add_argument("-model",dest="model_phy",default="WAG",choices=["DAYHOFF","DCMUT","JTT","MTREV","WAG","RTREV","CPREV","VT","BLOSUM62","MTMAM"],help="This option only applies for the concatenation of protein data into phylip format. Specify the model for all partitions defined in the partition file")
+formatting.add_argument("-model",dest="model_phy",default="WAG",choices=["DAYHOFF","DCMUT","JTT","MTREV","WAG","RTREV","CPREV","VT","BLOSUM62","MTMAM","LG"],help="This option only applies for the concatenation of protein data into phylip format. Specify the model for all partitions defined in the partition file")
 formatting.add_argument("-interleave",dest="interleave",action="store_const",const="interleave",help="Specificy this option to write output files in interleave format (currently only supported for nexus files")
 formatting.add_argument("-g",dest="gap",default="-",help="Symbol for gap (default is '%(default)s')")
 formatting.add_argument("-m",dest="missing",default="n",help="Symbol for missing data (default is '%(default)s')")
