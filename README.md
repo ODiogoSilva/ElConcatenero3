@@ -23,61 +23,86 @@ Finally, please note that ElConcatero3.py is not immune to bugs, and I'll be hap
 
 ElConcatenero3.py has the following options (which can also be consulted by typing "ElConcatenero3.py -h" or "ElConcatenero3.py --help in the command line):
 
-  -h, --help						**show this help message and exit**
- 
-  -in *INFILE [INFILE ...]*			**Provide the input file name. If multiple files are**
-									**provided, plase separated the names with spaces**
-									
-  
-  -if *{fasta,nexus,phylip,guess}*	**Format of the input file(s). The default is 'guess'**
-									**in which the program tries to guess the input format**
-									**and genetic code automatically**
-                        
-  -of *{nexus,phylip,fasta}*		**Format of the ouput file (default is 'nexus')**
-  
-  -model *{DAYHOFF,DCMUT,JTT,MTREV,WAG,RTREV,CPREV,VT,BLOSUM62,MTMAM}*
-									**This option only applies for the concatenation of**
-									**protein data into phylip format. Specify the model for**
-									**all partitions defined in the partition file**
-                        
-  -interleave						**Specificy this option to write output files in**
-									**interleave format (currently only supported for nexus**
-									**files)**
-             
-  -c                    			**Used for convertion of the input files passed as**
-									**arguments with the -in option. This flag precludes the**
-									**usage of the -o option, as the output file name is**
-									**automatically generated based on the input file name.**
-									
-  -r REVERSE						**Reverse a concatenated file into its original single**
-									**locus alignments. A partition file similar to the one**
-									**read by RAxML must be provided.**
+optional arguments:
 
-  -o *OUTFILE*            			**Name of the output file**									
- 
-  -g *GAP*							**Symbol for gap (default is '-')**
+  -h, --help            show this help message and exit
+
+Main execution:
+
+  -in *INFILE [INFILE ...]*
+						**Provide the input file name. If multiple files are
+                        provided, plase separated the names with spaces**
+                        
+  -if *{fasta,nexus,phylip,guess}*
+                        **Format of the input file(s). The default is 'guess' in
+                        which the program tries to guess the input format and
+                        genetic code automatically**
+                        
+  -of *{nexus,phylip,fasta} [{nexus,phylip,fasta} ...]*
+                        **Format of the ouput file(s). You may select multiple
+                        output formats simultaneously (default is 'nexus')**
+                        
+  -o *OUTFILE*           **Name of the output file**
+
+Alternative execution modes:
+
+  -c                    **Used for convertion of the input files passed as
+                        arguments with the -in option. This flag precludes the
+                        usage of the -o option, as the output file name is
+                        automatically generated based on the input file name**
+                        
+  -r REVERSE            **Reverse a concatenated file into its original single
+                        locus alignments. A partition file similar to the one
+                        read by RAxML must be provided**
+                        
+  -z                    **Use this option if you wish to concatenate auxiliary
+                        Zorro files associated with each alignment. Note that
+                        the auxiliary files must have the same prefix of the
+                        alignment file, with the addition of '_zorro.out'**
+                        
+  -zfile *[ZORRO_INFILE [ZORRO_INFILE ...]]*
+                        **Provide the sufix for the concatenated zorro file
+                        (default is '_zorro.out')**
+                        
+  -charset *CHARSET*     **Format the partition file of RAxML into a charset
+                        analogous to the Nexus block. A partition file similar
+                        to the one read by RAxML must be provided**
+                        
+  -partfile *PARTFILE*    **Format the charset analogous to the Nexus block into
+                        the partition file of RAxML**
+
+Formatting options:
+
+  -model *{DAYHOFF,DCMUT,JTT,MTREV,WAG,RTREV,CPREV,VT,BLOSUM62,MTMAM,LG}*
+                        **This option only applies for the concatenation of
+                        protein data into phylip format. Specify the model for
+                        all partitions defined in the partition file**
+                        
+  -interleave           **Specificy this option to write output files in
+                        interleave format (currently only supported for nexus
+                        files**
+                        
+  -g GAP                *Symbol for gap (default is '-')*
   
-  -m *MISSING*						**Symbol for missing data (default is 'n')**
-  
-  -z								**Use this option if you wish to concatenate auxiliary**
-									**Zorro files associated with each alignment. Note that**
-									**the auxiliary files must have the same prefix of the**
-									**alignment file, with the addition of '_zorro.out'**
-								
-  -zfile *[ZORRO_INFILE ...]*		**Provide the sufix for the concatenated zorro file**
-									**(default is '_zorro.out')**
-  
-  -rm *[REMOVE ...]*				**Removes the specified taxa from the final alignment.**
-									**Multiple taxa may be specified and separated by**
-									**whitespace**
-								
-  -\-pickle-taxa *{dump,load}*		**Dump option: Only output a pickle object with the taxa**
-									**names of the input alignment; Load option: loads the**
-									**taxa names from a pickle object to be incorporated in**
-									**the output alignment**
-									
-  -\-check 							**Provides a final check for the lengths of the**
-									**alignment sequences**
+  -m MISSING            *Symbol for missing data (default is 'n')*
+
+Data manipultation:
+
+  -rm *[REMOVE [REMOVE ...]]*
+                        **Removes the specified taxa from the final alignment.
+                        Multiple taxa may be specified and separated by
+                        whitespace**
+                        
+  --pickle-taxa *{dump,load}*
+                        **Dump option: Only output a pickle object with the taxa
+                        names of the input alignment; Load option: loads the
+                        taxa names from a pickle object to be incorporated in
+                        the output alignment**
+
+Additional data checks:
+
+  --check               **Provides a final check for the lengths of the
+                        alignment sequences**
 
 #####Note: The order of the options does not matter.
 		
