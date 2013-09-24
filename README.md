@@ -1,4 +1,4 @@
-#### About ElConcatenero3
+## About ElConcatenero3
 
 ElConcatenero3 is a python program developed for the UNIX OS (but should work in any operating system with python 3.x) that converts and concatenates common population genetics and phylogenetics data file types (such as Fasta, Phylip and Nexus). The program works through command line exclusively, which makes it fast and scriptable, a usefull feature when dealing with lots of files simultaneously. It uses the ElParsito3.py module, which is where the file parsing and writting classes are.
 
@@ -19,15 +19,15 @@ There is no need for instalation. The only requirement is that the ElParsito3.py
 
 Finally, please note that ElConcatero3.py is not immune to bugs, and I'll be happy to know about them through my e-mail (o.diogosilva@gmail.com) so that I can fix them. Any suggestions or comments are also welcome.
 
-#### Options
+### Options
 
 ElConcatenero3.py has the following options (which can also be consulted by typing "ElConcatenero3.py -h" or "ElConcatenero3.py --help in the command line):
 
-optional arguments:
+####optional arguments:
 
   -h, --help            show this help message and exit
 
-Main execution:
+####Main execution:
 
   -in *INFILE [INFILE ...]*
 						**Provide the input file name. If multiple files are
@@ -44,7 +44,7 @@ Main execution:
                         
   -o *OUTFILE*           **Name of the output file**
 
-Alternative execution modes:
+####Alternative execution modes:
 
   -c                    **Used for convertion of the input files passed as
                         arguments with the -in option. This flag precludes the
@@ -71,7 +71,7 @@ Alternative execution modes:
   -partfile *PARTFILE*    **Format the charset analogous to the Nexus block into
                         the partition file of RAxML**
 
-Formatting options:
+####Formatting options:
 
   -model *{DAYHOFF,DCMUT,JTT,MTREV,WAG,RTREV,CPREV,VT,BLOSUM62,MTMAM,LG}*
                         **This option only applies for the concatenation of
@@ -86,7 +86,7 @@ Formatting options:
   
   -m MISSING            *Symbol for missing data (default is 'n')*
 
-Data manipultation:
+####Data manipultation:
 
   -rm *[REMOVE [REMOVE ...]]*
                         **Removes the specified taxa from the final alignment.
@@ -99,14 +99,14 @@ Data manipultation:
                         taxa names from a pickle object to be incorporated in
                         the output alignment**
 
-Additional data checks:
+####Additional data checks:
 
   --check               **Provides a final check for the lengths of the
                         alignment sequences**
 
 #####Note: The order of the options does not matter.
 		
-#### Usage
+### Usage
 
 ##### Conversion (Fasta to Nexus)
 
