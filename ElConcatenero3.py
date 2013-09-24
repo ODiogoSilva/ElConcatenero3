@@ -37,11 +37,11 @@ main_exec.add_argument("-o",dest="outfile",help="Name of the output file")
 
 # Alternative modes
 alternative = parser.add_argument_group("Alternative execution modes")
-alternative.add_argument("-c",dest="Conversion",action="store_const",const=True,help="Used for convertion of the input files passed as arguments with the -in option. This flag precludes the usage of the -o option, as the output file name is automatically generated based on the input file name.")
-alternative.add_argument("-r",dest="reverse",help="Reverse a concatenated file into its original single locus alignments. A partition file similar to the one read by RAxML must be provided.")
+alternative.add_argument("-c",dest="Conversion",action="store_const",const=True,help="Used for convertion of the input files passed as arguments with the -in option. This flag precludes the usage of the -o option, as the output file name is automatically generated based on the input file name")
+alternative.add_argument("-r",dest="reverse",help="Reverse a concatenated file into its original single locus alignments. A partition file similar to the one read by RAxML must be provided")
 alternative.add_argument("-z",dest="zorro",action="store_const",const=True,help="Use this option if you wish to concatenate auxiliary Zorro files associated with each alignment. Note that the auxiliary files must have the same prefix of the alignment file, with the addition of '_zorro.out'")
 alternative.add_argument("-zfile",dest="zorro_infile",nargs="*",default="_zorro.out",help="Provide the sufix for the concatenated zorro file (default is '%(default)s')")
-alternative.add_argument("-charset",dest="charset",help="Format the partition file of RAxML into a charset analogous to the Nexus block. A partition file similar to the one read by RAxML must be provided.")
+alternative.add_argument("-charset",dest="charset",help="Format the partition file of RAxML into a charset analogous to the Nexus block. A partition file similar to the one read by RAxML must be provided")
 alternative.add_argument("-partfile",dest="partfile",help="Format the charset analogous to the Nexus block into the partition file of RAxML")
 
 # Formatting options
