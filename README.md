@@ -146,4 +146,3 @@ ElConcatenero3.py -of phylip -in *.fas -o concatenated_file
 
 #### ToDo
 
-- Ability to parse concatenated datasets, either to separate them or to further concatenate
