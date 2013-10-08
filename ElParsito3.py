@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-#  ElParsito.py v3.1.5
+#  ElParsito.py v3.1.6
 #
 #  
 #  Copyright 2012 Unknown <diogo@arch>
@@ -498,7 +498,7 @@ class writer ():
 				partition_range = [int(x) for x in part[1].split("-")]
 				outfile_handle.write("%s %s\n" % (taxa_number, (int(partition_range[1])-int(partition_range[0]))))
 				for taxon, sequence in alignment_dic.items():
-					outfile_handle.write("%s %s\n" % (taxon[:self.cut_space_phy].ljust(self.seq_space_phy),sequence[(int(partition_range[0])-1):(int(partition_range[1])-1)]))
+					outfile_handle.write("%s  %s\n" % (taxon[:self.cut_space_phy].ljust(self.seq_space_phy),sequence[(int(partition_range[0])-1):(int(partition_range[1])-1)]))
 
 			
 	def zorro (self, zorro_weigths):
