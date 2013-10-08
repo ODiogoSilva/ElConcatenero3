@@ -62,7 +62,7 @@ def autofinder (reference_file):
 	return autofind, code
 	
 def partition_format (partition_file):
-	""" Tries to guess the format of the partition file (Whether it is Nexus of RAxML's """
+	""" Tries to guess the format of the partition file (Whether it is Nexus of RAxML's) """
 	file_handle = open(partition_file)
 	
 	# Skips first empty lines, if any 
@@ -480,6 +480,26 @@ class writer ():
 				out_file.write("end;\n")
 			
 		out_file.close()
+
+	def mcmctree (self, alignment_dic, partitions):
+		""" Writes partitioned data sets into MCMCTree format """
+		outfile_handle = open(self.output_file+".phy","w")
+		taxa_number = len(alignment_dic)
+
+		if partitions != None:
+			for part in partitions:
+				partition_range = part[2]
+				outfile_handle.write("%s %s\n" % (len(taxa_number), (int(partition_range[1])-int(partition_range[0]))))
+				for taxon, sequence in alignment_dic.items():
+					outfile_handle.write("%s %s\n" % (taxon[:self.cut_space_phy].ljust(self.seq_space_phy),sequence[(int(partition_range[0])-1):(int(partition_range[1])-1)]))
+		else:
+			partitions = self.loci_range
+			for part in partitions:
+				partition_range = [int(x) for x in part[1].split("-")]
+				outfile_handle.write("%s %s\n" % (taxa_number, (int(partition_range[1])-int(partition_range[0]))))
+				for taxon, sequence in alignment_dic.items():
+					outfile_handle.write("%s %s\n" % (taxon[:self.cut_space_phy].ljust(self.seq_space_phy),sequence[(int(partition_range[0])-1):(int(partition_range[1])-1)]))
+
 			
 	def zorro (self, zorro_weigths):
 		""" Creates a concatenated file with the zorro weigths for the corresponding alignment files """
@@ -488,3 +508,4 @@ class writer ():
 		for weigth in zorro_weigths:
 			outfile_handle.write("%s\n" % weigth)
 		outfile_handle.close()
+

@@ -32,7 +32,7 @@ parser = argparse.ArgumentParser(description="Concatenates DNA data matrices")
 main_exec = parser.add_argument_group("Main execution")
 main_exec.add_argument("-in",dest="infile",nargs="+",help="Provide the input file name. If multiple files are provided, plase separated the names with spaces")
 main_exec.add_argument("-if",dest="InputFormat",default="guess",choices=["fasta","nexus","phylip","guess"],help="Format of the input file(s). The default is 'guess' in which the program tries to guess the input format and genetic code automatically")
-main_exec.add_argument("-of",dest="OutputFormat",nargs="+",default="nexus",choices=["nexus","phylip","fasta"],help="Format of the ouput file(s). You may select multiple output formats simultaneously (default is '%(default)s')")
+main_exec.add_argument("-of",dest="OutputFormat",nargs="+",default="nexus",choices=["nexus","phylip","fasta","mcmctree"],help="Format of the ouput file(s). You may select multiple output formats simultaneously (default is '%(default)s')")
 main_exec.add_argument("-o",dest="outfile",help="Name of the output file")
 
 # Alternative modes
@@ -174,6 +174,15 @@ def main_parser(alignment_list):
 		output_instance.nexus(alignment_dic,conversion,interleave)
 	if arg.zorro != None:
 		output_instance.zorro(zorro_weigths)
+	if "mcmctree" in output_format:
+		if arg.charset == None and arg.partfile == None:
+			output_instance.mcmctree(alignment_dic, arg.partfile)
+		else:
+			if arg.partfile == None:
+				output_instance.mcmctree(alignment_dic, arg.charset)
+			else:
+				output_instance.mcmctree(alignment_dic, arg.partfile)
+
 		
 def main_check ():
 	if arg.charset != None and arg.outfile == None:
