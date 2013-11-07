@@ -32,7 +32,7 @@ class Alignment (Base):
 		self.input_alignment = input_alignment
 
 		# Get alignment format and code
-		input_format, sequence_code = self.autofinder (input_alignment)
+		input_format, self.sequence_code = self.autofinder (input_alignment)
 
 		# parsing the alignment and getting the basic class attributes
 		# Three attributes will be assigned: alignment_storage, model and loci_lengths
@@ -146,6 +146,58 @@ class Alignment (Base):
 			counter += 1
 
 		return correspondance_dic
+
+	def write_to_file (self, output_format, output_file, seq_space_nex=40, seq_space_phy=30, seq_space_ima2=10, cut_space_nex=50, cut_space_phy=50, cut_space_ima2=8, conversion=None, form="leave", gap="-", missing="n"):
+		""" Writes the alignment object into a specified output file, automatically adding the extension, according to the output format """
+
+		# Writes file in phylip format
+		if output_format == "phylip":
+
+			out_file = open(output_file+".phy","w")
+			out_file.write("%s %s\n" % (len(self.alignment_storage), self.loci_lengths))
+			for key, seq in self.alignment_storage.items():
+					out_file.write("%s %s\n" % (key[:cut_space_phy].ljust(seq_space_phy),seq))
+			if self.loci_range = None:
+				partition_file = open(output_file+"_part.File","a")
+				for partition,lrange in self.loci_range:
+					partition_file.write("%s, %s = %s\n" % (model,partition,lrange))
+
+		# Writes file in nexus format
+		if output_format == "nexus":
+
+			out_file = open(output_file+".nex","w")
+			
+			# This writes the output in interleave format
+			if form == "interleave":
+				out_file.write("#NEXUS\n\nBegin data;\n\tdimensions ntax=%s nchar=%s ;\n\tformat datatype=%s interleave=yes gap=%s missing=%s ;\n\tmatrix\n" % (len(self.alignment_storage), self.loci_lengths, self.sequence_code, gap, missing))
+				counter = 0
+				for i in range (90,self.loci_lengths,90):
+					for key, seq in self.alignment_storage.items():
+						out_file.write("%s %s\n" % (key[:self.cut_space_nex].ljust(self.seq_space_nex),seq[counter:i]))
+					else:
+						out_file.write("\n")
+						counter = i				
+				else:
+					for key, seq in self.alignment_storage.items():
+						out_file.write("%s %s\n" % (key[:self.cut_space_nex].ljust(self.seq_space_nex),seq[i:self.loci_lengths]))
+					else:
+						out_file.write("\n")
+				out_file.write(";\n\tend;")
+
+			# This writes the output in leave format (default)
+			else:
+				out_file.write("#NEXUS\n\nBegin data;\n\tdimensions ntax=%s nchar=%s ;\n\tformat datatype=%s interleave=no gap=%s missing=%s ;\n\tmatrix\n" % (len(self.alignment_storage), self.loci_lengths, self.sequence_code, self.gap, self.missing))
+				for key,seq in self.alignment_storage.items():
+					out_file.write("%s %s\n" % (key[:self.cut_space_nex].ljust(self.seq_space_nex),seq))
+				out_file.write(";\n\tend;")
+
+		# Writes file in fasta format
+		if output_format == "fasta":
+			out_file = open(self.output_file+".fas","w")
+			for key in self.taxa_order:
+				out_file.write(">%s\n%s\n" % (key,alignment_dic[key]))				
+				
+		out_file.close()
 
 
 
