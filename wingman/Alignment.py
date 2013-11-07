@@ -35,6 +35,7 @@ class Alignment (Base):
 		input_format, sequence_code = self.autofinder (input_alignment)
 
 		# parsing the alignment and getting the basic class attributes
+		# Three attributes will be assigned: alignment_storage, model and loci_lengths
 		self.read_alignment (input_alignment, input_format)
 		
 	def read_alignment (self, input_alignment, alignment_format, size_check=True):
@@ -111,16 +112,41 @@ class Alignment (Base):
 			print ("WARNING: Duplicated taxa have been found in file %s (%s). Please correct this problem and re-run the program\n" %(input_alignment,", ".join(taxa)))
 			raise SystemExit
 		
-		return 0
-
 	def iter_taxa (self):
+		""" Returns a list with the taxa contained in the alignment """
 
 		taxa = [sp for sp in self.alignment_storage]
 
 		return taxa
 
 	def iter_sequences (self):
+		""" Returns a list with the sequences contained in the alignment """
 
 		sequences = [seq for seq in self.alignment_storage]
 
 		return sequences
+
+	def collapse (self):
+		""" Collapses equal sequences into haplotypes. This method changes the alignment_storage variable and only returns a dictionary with the correspondance between the haplotypes and the original taxa names  """
+
+		collapsed_dic, correspondance_dic = orderedDict(), orderedDict()
+		counter = 1
+
+		for taxa, seq in self.alignment_storage.items():
+			if seq in collapsed_dic:
+				collapsed_dic[seq].append(taxa)
+			else:
+				collapsed_dic[seq] = [taxa]
+
+		self.alignment_storage = orderedDict()
+		for seq, taxa_list in collapsed_dic.items():
+			haplotype = "Hap_%s" % (counter)
+			self.alignment_storage[haplotype] = seq
+			correspondance_dic[haplotype] = taxa_list
+			counter += 1
+
+		return correspondance_dic
+
+
+
+
