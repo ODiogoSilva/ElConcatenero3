@@ -87,3 +87,41 @@ class Base ():
 		else:
 			code = ("Protein","X")
 		return code	
+
+	def rm_illegal (self,string):
+		""" Function that removes illegal characters from taxa names """
+		illegal_chars = [":",",",")","(",";","[","]","'", '"'] # Additional illegal characters are added here 
+		clean_name = "".join([char for char in string if char not in illegal_chars])
+		if string != clean_name:
+			print ("\nWARNING: Removed illegal characters from the taxa %s" % string)
+		return clean_name
+
+	def duplicate_taxa (self, taxa_list):
+		""" Function that identifies duplicated taxa """
+		import collections
+		duplicated_taxa = [x for x, y in collections.Counter(taxa_list).items() if y > 1]
+		return duplicated_taxa
+
+	def check_format (self,input_alignment,alignment_format):
+		""" This function performs some very basic checks to see if the format of the input file is in accordance to the input file format specified when the script is executed """
+		input_handle = open(input_alignment)
+		line = input_handle.readline()
+		while line.strip() == "":
+			line = next(input_handle)
+		
+		if alignment_format == "fasta":
+			if line.strip()[0] != ">":
+				print ("File not in Fasta format. First non-empty line of the input file %s does not start with '>'. Please verify the file, or the input format settings\nExiting..." % input_alignment)
+				raise SystemExit
+		elif alignment_format == "nexus":
+			if line.strip().lower() != "#nexus":
+				print ("File not in Nexus format. First non-empty line of the input file %s does not start with '#NEXUS'. Please verify the file, or the input format settings\nExiting..." % input_alignment)
+				raise SystemExit
+		elif alignment_format == "phylip":
+			try:
+				header = line.strip().split()
+				int(header[0])
+				int(header[1])
+			except:
+				print ("File not in correct Phylip format. First non-empty line of the input file %s does not start with two intergers separated by whitespace. Please verify the file, or the input format settings\nExiting..." % input_alignment)
+				raise SystemExit
