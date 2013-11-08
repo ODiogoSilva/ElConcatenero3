@@ -22,6 +22,7 @@
 #  
 
 from wingman.Base import Base
+from wingman.ErrorHandling import *
 from collections import OrderedDict
 
 class Alignment (Base):
@@ -32,20 +33,20 @@ class Alignment (Base):
 		self.input_alignment = input_alignment
 
 		# Get alignment format and code
-		input_format, self.sequence_code = self.autofinder (input_alignment)
+		self.input_format, self.sequence_code = self.autofinder (input_alignment)
 
 		# parsing the alignment and getting the basic class attributes
-		# Three attributes will be assigned: alignment_storage, model and loci_lengths
-		self.read_alignment (input_alignment, input_format)
+		# Three attributes will be assigned: alignment, model and loci_lengths
+		self.read_alignment (input_alignment, self.input_format)
 		
 	def read_alignment (self, input_alignment, alignment_format, size_check=True):
 		""" The read_alignment method is run when the class is initialized to parse an alignment an set all the basic attributes of the class.
 
-		The 'alignment_storage' variable contains an ordered dictionary with the taxa names as keys and sequences as values
+		The 'alignment' variable contains an ordered dictionary with the taxa names as keys and sequences as values
 		The 'model' is an non essential variable that contains a string with a substitution model of the alignment. This only applies to Nexus input formats, as it is the only supported format that contains such information 
 		The 'loci_lengths' variable contains a int value with the length of the current alignment """
 		
-		self.alignment_storage = OrderedDict() # Storage taxa names and corresponding sequences in an ordered Dictionary
+		self.alignment = OrderedDict() # Storage taxa names and corresponding sequences in an ordered Dictionary
 		self.model = [] # Only applies for nexus format. It stores any potential substitution model at the end of the file
 		
 		file_handle = open(input_alignment)
@@ -60,7 +61,7 @@ class Alignment (Base):
 					taxa = self.rm_illegal(taxa)
 					taxa_order.append(taxa)
 					sequence = line.split()[1].strip()
-					self.alignment_storage[taxa] = sequence
+					self.alignment[taxa] = sequence
 					
 					## TO DO: Read phylip interleave
 			
@@ -71,10 +72,10 @@ class Alignment (Base):
 					taxa = line[1:].strip().replace(" ","_")
 					taxa = self.rm_illegal(taxa)
 					taxa_order.append(taxa)
-					self.alignment_storage[taxa] = ""
+					self.alignment[taxa] = ""
 				elif line.strip() != "":
-					self.alignment_storage[taxa] += line.strip()
-			self.loci_lengths = len(list(self.alignment_storage.values())[0])
+					self.alignment[taxa] += line.strip()
+			self.loci_lengths = len(list(self.alignment.values())[0])
 			
 		# PARSING NEXUS FORMAT
 		elif alignment_format == "nexus":
@@ -89,10 +90,10 @@ class Alignment (Base):
 					taxa = self.rm_illegal(taxa)
 					if taxa not in taxa_order: # Prevents duplications in the list when the input format is interleave
 						taxa_order.append(taxa)
-					if taxa in self.alignment_storage: # This accomodates for the interleave format
-						self.alignment_storage[taxa] += "".join(line.strip().split()[1:])
+					if taxa in self.alignment: # This accomodates for the interleave format
+						self.alignment[taxa] += "".join(line.strip().split()[1:])
 					else:
-						self.alignment_storage[taxa] = "".join(line.strip().split()[1:])
+						self.alignment[taxa] = "".join(line.strip().split()[1:])
 						
 				# This bit of code will extract a potential substitution model from the file
 				elif counter == 2 and line.lower().strip().startswith("lset"):
@@ -100,11 +101,11 @@ class Alignment (Base):
 				elif counter == 2 and line.lower().strip().startswith("prset"):
 					self.model.append(line.strip())
 
-			self.loci_lengths = len(list(self.alignment_storage.values())[0])
+			self.loci_lengths = len(list(self.alignment.values())[0])
 		
 		# Checks the size consistency of the alignment
 		if size_check == True:
-			self.check_sizes (self.alignment_storage, input_alignment)
+			self.check_sizes (self.alignment, input_alignment)
 		
 		# Checks for duplicate taxa
 		if len(taxa_order) != len(set(taxa_order)):
@@ -115,52 +116,60 @@ class Alignment (Base):
 	def iter_taxa (self):
 		""" Returns a list with the taxa contained in the alignment """
 
-		taxa = [sp for sp in self.alignment_storage]
+		taxa = [sp for sp in self.alignment]
 
 		return taxa
 
 	def iter_sequences (self):
 		""" Returns a list with the sequences contained in the alignment """
 
-		sequences = [seq for seq in self.alignment_storage]
+		sequences = [seq for seq in self.alignment]
 
 		return sequences
 
 	def collapse (self):
-		""" Collapses equal sequences into haplotypes. This method changes the alignment_storage variable and only returns a dictionary with the correspondance between the haplotypes and the original taxa names  """
+		""" Collapses equal sequences into haplotypes. This method changes the alignment variable and only returns a dictionary with the correspondance between the haplotypes and the original taxa names  """
 
 		collapsed_dic, correspondance_dic = orderedDict(), orderedDict()
 		counter = 1
 
-		for taxa, seq in self.alignment_storage.items():
+		for taxa, seq in self.alignment.items():
 			if seq in collapsed_dic:
 				collapsed_dic[seq].append(taxa)
 			else:
 				collapsed_dic[seq] = [taxa]
 
-		self.alignment_storage = orderedDict()
+		self.alignment = orderedDict()
 		for seq, taxa_list in collapsed_dic.items():
 			haplotype = "Hap_%s" % (counter)
-			self.alignment_storage[haplotype] = seq
+			self.alignment[haplotype] = seq
 			correspondance_dic[haplotype] = taxa_list
 			counter += 1
 
 		return correspondance_dic
 
-	def write_to_file (self, output_format, output_file, seq_space_nex=40, seq_space_phy=30, seq_space_ima2=10, cut_space_nex=50, cut_space_phy=50, cut_space_ima2=8, conversion=None, form="leave", gap="-", missing="n"):
+	def write_to_file (self, output_format, output_file, new_alignment = None, conversion=False seq_space_nex=40, seq_space_phy=30, seq_space_ima2=10, cut_space_nex=50, cut_space_phy=50, cut_space_ima2=8, conversion=None, form="leave", gap="-", missing="n", loci_range=[], model_phylip="LG", model_list=[]):
 		""" Writes the alignment object into a specified output file, automatically adding the extension, according to the output format """
+
+		# If this function is called in the AlignmentList class, there may be a need to specify a new alignment dictionary, such as a concatenated one
+		if new_alignment != None:
+			alignment = new_alignment
+		else:
+			alignment = self.alignment
 
 		# Writes file in phylip format
 		if output_format == "phylip":
 
 			out_file = open(output_file+".phy","w")
-			out_file.write("%s %s\n" % (len(self.alignment_storage), self.loci_lengths))
-			for key, seq in self.alignment_storage.items():
+			out_file.write("%s %s\n" % (len(alignment), self.loci_lengths))
+			for key, seq in alignment.items():
 					out_file.write("%s %s\n" % (key[:cut_space_phy].ljust(seq_space_phy),seq))
-			if self.loci_range = None:
+
+			# In case there is a concatenated alignment being written
+			if conversion == None:
 				partition_file = open(output_file+"_part.File","a")
-				for partition,lrange in self.loci_range:
-					partition_file.write("%s, %s = %s\n" % (model,partition,lrange))
+				for partition,lrange in loci_range:
+					partition_file.write("%s, %s = %s\n" % (model_phylip,part, model_list=[]ition,lrange))
 
 		# Writes file in nexus format
 		if output_format == "nexus":
@@ -169,25 +178,44 @@ class Alignment (Base):
 			
 			# This writes the output in interleave format
 			if form == "interleave":
-				out_file.write("#NEXUS\n\nBegin data;\n\tdimensions ntax=%s nchar=%s ;\n\tformat datatype=%s interleave=yes gap=%s missing=%s ;\n\tmatrix\n" % (len(self.alignment_storage), self.loci_lengths, self.sequence_code, gap, missing))
+				out_file.write("#NEXUS\n\nBegin data;\n\tdimensions ntax=%s nchar=%s ;\n\tformat datatype=%s interleave=yes gap=%s missing=%s ;\n\tmatrix\n" % (len(alignment), self.loci_lengths, self.sequence_code, gap, missing))
 				counter = 0
 				for i in range (90,self.loci_lengths,90):
-					for key, seq in self.alignment_storage.items():
+					for key, seq in alignment.items():
 						out_file.write("%s %s\n" % (key[:self.cut_space_nex].ljust(self.seq_space_nex),seq[counter:i]))
 					else:
 						out_file.write("\n")
 						counter = i				
 				else:
-					for key, seq in self.alignment_storage.items():
+					for key, seq in alignment.items():
 						out_file.write("%s %s\n" % (key[:self.cut_space_nex].ljust(self.seq_space_nex),seq[i:self.loci_lengths]))
 					else:
 						out_file.write("\n")
 				out_file.write(";\n\tend;")
 
+			if conversion == False:
+				out_file.write("\nbegin mrbayes;\n")
+				for partition,lrange in loci_range:
+					out_file.write("\tcharset %s = %s;\n" % (partition,lrange))
+				out_file.write("\tpartition part = %s: %s;\n\tset partition=part;\nend;\n" % (len(loci_range),", ".join([part[0] for part in loci_range])))
+				
+				# Concatenates the substitution models of the individual partitions
+				if model_list != []:
+					loci_number = 1
+					out_file.write("begin mrbayes;\n")
+					for model in self.model_list:
+						m1 = model[0].split()
+						m2 = model[1].split()
+						m1_final = m1[0]+" applyto=("+str(loci_number)+") "+" ".join(m1[1:])
+						m2_final = m2[0]+" applyto=("+str(loci_number)+") "+" ".join(m2[1:])
+						out_file.write("\t%s\n\t%s\n" % (m1_final, m2_final))
+						loci_number += 1
+					out_file.write("end;\n")
+
 			# This writes the output in leave format (default)
 			else:
-				out_file.write("#NEXUS\n\nBegin data;\n\tdimensions ntax=%s nchar=%s ;\n\tformat datatype=%s interleave=no gap=%s missing=%s ;\n\tmatrix\n" % (len(self.alignment_storage), self.loci_lengths, self.sequence_code, self.gap, self.missing))
-				for key,seq in self.alignment_storage.items():
+				out_file.write("#NEXUS\n\nBegin data;\n\tdimensions ntax=%s nchar=%s ;\n\tformat datatype=%s interleave=no gap=%s missing=%s ;\n\tmatrix\n" % (len(alignment), self.loci_lengths, self.sequence_code, self.gap, self.missing))
+				for key,seq in alignment.items():
 					out_file.write("%s %s\n" % (key[:self.cut_space_nex].ljust(self.seq_space_nex),seq))
 				out_file.write(";\n\tend;")
 
@@ -196,9 +224,88 @@ class Alignment (Base):
 			out_file = open(self.output_file+".fas","w")
 			for key in self.taxa_order:
 				out_file.write(">%s\n%s\n" % (key,alignment_dic[key]))				
-				
+
 		out_file.close()
 
 
+class AlignmentList (Base, Alignment):
+	""" At the most basic instance, this class contains a list of Alignment objects upon which several methods can be applied. It only requires a list of alignment files.
 
+		It inherits methods from Base and Alignment classes for the write_to_file methods """
+
+	def __init__ (self, alignment_list):
+
+		self.alignment_object_list = []
+
+		for alignment in alignment_list:
+
+			alignment_object = Alignment(alignment)
+			self.alignment_object_list.append(alignment_object)
+
+	def concatenate (self, missing="n"):
+		""" The concatenate method will concatenate the multiple sequence alignments and create several attributes """
+
+		self.loci_lengths = [] # Saves the sequence lengths of the 
+		self.loci_range = [] # Saves the loci names as keys and their range as values
+		self.models = [] # Saves the substitution models for each one
+		
+		for alignment_object in self.alignment_object_list:
+			
+			# When set to True, this statement produces a progress status on the terminal
+			if progress_stat == True: 
+				print ("\rProcessing file %s out of %s" % (self.alignment_object_list.index(alignment_object)+1,len(self.alignment_object_list)),end="")
+
+			# If input format is nexus, save the substution model, if any
+			if alignment_object.input_format == "nexus" and alignment_object.model != []:
+				self.models.append(alignment_object.model)
+
+			# Algorithm that fills absent taxa with missing data
+			if self.loci_lengths == []:
+				self.concatenation = alignment_object.alignment # Create the main alignment dictionary from the first current alignment and never visit this statement again
+				self.loci_lengths.append(alignment_object.loci_lengths)
+				self.loci_range.append((alignment_object.input_alignment.split(".")[0],"1-%s" % (alignment_object.loci_lengths))) # Saving the range for the first loci
+	
+			else:
+				for taxa, sequence in alignment_object.alignment.items(): 
+					if taxa in self.concatenation: 
+						self.concatenation[taxa] += sequence # Append the sequence from the current alignment to the respective taxa in the main alignment
+					elif taxa not in self.concatenation:
+						self.concatenation[taxa] = missing*sum(self.loci_lengths)+sequence # If the taxa does not yet exist in the main alignment, create the new entry with a sequence of 'n' characters of the same size as the length of the missed loci and the sequence from the current alignment
+						main_taxa_order.append(taxa)
+
+				# Saving the range for the subsequent loci
+				self.loci_range.append((alignment_object.input_alignment.split(".")[0],"%s-%s" % (sum(self.loci_lengths)+1, sum(self.loci_lengths)+alignment_object.loci_lengths)))
+				self.loci_lengths.append(alignment_object.loci_lengths)
+				
+				# Check if any taxa from the main alignment are missing from the current alignment. If yes, fill them with 'n'
+				for taxa in self.concatenation:
+					if taxa not in alignment_object.alignment: 
+						self.concatenation[taxa] += missing*alignment_object.loci_lengths
+		else:
+			print ("\n")
+
+	def iter_alignment_dic (self):
+
+		return [alignment.alignment for alignment in self.alignment_object_list]
+
+	def iter_alignment_obj (self):
+
+		return [alignment for alignment in self.alignment_object_list]
+
+	def write_to_file (self, output_format, output_file=None):
+		""" This method writes a list of alignment objects or a concatenated alignment into a file """
+
+		# If the alignments have been concatenated write like this
+		if self.concatenation == None:
+			try:
+				output_file
+				self.write_to_file(output_format, output_file, loci_range=self.loci_range, new_alignment=self.concatenation)
+			except:
+				raise ArgumentError("'output_file' argument of write_to_file method must not be None")
+
+		# If the alignments have not been concatenated, write each alignment individually
+		else:
+			for alignment_obj in self.alignment_obj_list:
+				output_file_name = alignment_obj.input_file.split(".")[0]
+				alignment_obj.write_to_file(output_format, output_file=output_file_name)
 
