@@ -272,8 +272,15 @@ class AlignmentList (Base, Alignment):
 			alignment_object = Alignment(alignment)
 			self.alignment_object_list.append(alignment_object)
 
+	def _get_format (self):
+		""" Gets the input format of the first alignment in the list """
+
+		return self.alignment_object_list[0].input_format
+
 	def concatenate (self, missing="n"):
-		""" The concatenate method will concatenate the multiple sequence alignments and create several attributes """
+		""" The concatenate method will concatenate the multiple sequence alignments and create several attributes 
+
+		This method sets the first three variables below and the concatenation variable containing the dict object"""
 
 		self.loci_lengths = [] # Saves the sequence lengths of the 
 		self.loci_range = [] # Saves the loci names as keys and their range as values
@@ -314,6 +321,9 @@ class AlignmentList (Base, Alignment):
 		else:
 			print ("\n")
 
+		concatenated_alignment = Alignment(self.concatenation, input_format=self._get_format,model_list=self.models)
+		return concatenated_alignment
+
 	def iter_alignment_dic (self):
 
 		return [alignment.alignment for alignment in self.alignment_object_list]
@@ -325,17 +335,7 @@ class AlignmentList (Base, Alignment):
 	def write_to_file (self, output_format, output_file=None):
 		""" This method writes a list of alignment objects or a concatenated alignment into a file """
 
-		# If the alignments have been concatenated write like this
-		if self.concatenation == None:
-			try:
-				output_file
-				self.write_to_file(output_format, output_file, loci_range=self.loci_range, new_alignment=self.concatenation)
-			except:
-				raise ArgumentError("'output_file' argument of write_to_file method must not be None")
-
-		# If the alignments have not been concatenated, write each alignment individually
-		else:
-			for alignment_obj in self.alignment_obj_list:
-				output_file_name = alignment_obj.input_file.split(".")[0]
-				alignment_obj.write_to_file(output_format, output_file=output_file_name)
+		for alignment_obj in self.alignment_obj_list:
+			output_file_name = alignment_obj.input_file.split(".")[0]
+			alignment_obj.write_to_file(output_format, output_file=output_file_name)
 
