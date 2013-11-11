@@ -90,9 +90,6 @@ def main_parser(alignment_list):
 			outfile = "".join(alignment_list).split(".")[0]
 
 
-	# Creating main instance of the parser
-	# main_instance = ep.SeqUtils ()
-
 	# The input file at this stage is not necessary
 	# If just converting the partition file format do this and exit
 	# if arg.charset != None:
@@ -122,6 +119,15 @@ def main_parser(alignment_list):
 	else:
 
 		alignments = Alignment.AlignmentList(alignment_list)
+
+		if arg.conversion != None:
+
+			alignments.write_to_file(output_format)
+
+		else:
+
+			concatenated_alignment = alignments.concatenate()
+			concatenated_alignment.write_to_file (output_format, outfile)
 
 
 	# if arg.input_format == "guess":
