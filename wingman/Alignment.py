@@ -41,7 +41,7 @@ class Alignment (Base):
 			self.input_format, self.sequence_code = self.autofinder (input_alignment)
 
 			# In case the input format is specified, overwrite the attribute
-			if input_format != None or input_format != "guess":
+			if input_format != None:
 				self.input_format = input_format
 
 			# parsing the alignment and getting the basic class attributes
@@ -84,7 +84,7 @@ class Alignment (Base):
 		self.model = [] # Only applies for nexus format. It stores any potential substitution model at the end of the file
 		
 		file_handle = open(input_alignment)
-		
+
 		# PARSING PHYLIP FORMAT
 		if alignment_format == "phylip":
 			header = file_handle.readline().split() # Get the number of taxa and sequence length from the file header
@@ -93,7 +93,6 @@ class Alignment (Base):
 				if line != "":
 					taxa = line.split()[0].replace(" ","")
 					taxa = self.rm_illegal(taxa)
-					taxa_order.append(taxa)
 					sequence = line.split()[1].strip()
 					self.alignment[taxa] = sequence
 					
@@ -105,7 +104,6 @@ class Alignment (Base):
 				if line.strip().startswith(">"):
 					taxa = line[1:].strip().replace(" ","_")
 					taxa = self.rm_illegal(taxa)
-					taxa_order.append(taxa)
 					self.alignment[taxa] = ""
 				elif line.strip() != "":
 					self.alignment[taxa] += line.strip()
@@ -122,8 +120,6 @@ class Alignment (Base):
 				elif line.strip() != "" and counter == 1: # Start parsing here
 					taxa = line.strip().split()[0].replace(" ","")
 					taxa = self.rm_illegal(taxa)
-					if taxa not in taxa_order: # Prevents duplications in the list when the input format is interleave
-						taxa_order.append(taxa)
 					if taxa in self.alignment: # This accomodates for the interleave format
 						self.alignment[taxa] += "".join(line.strip().split()[1:])
 					else:
@@ -142,7 +138,7 @@ class Alignment (Base):
 			self.check_sizes (self.alignment, input_alignment)
 		
 		# Checks for duplicate taxa
-		if len(taxa_order) != len(set(taxa_order)):
+		if len(list(self.alignment)) != len(set(list(self.alignment))):
 			taxa = self.duplicate_taxa(taxa_order)
 			print ("WARNING: Duplicated taxa have been found in file %s (%s). Please correct this problem and re-run the program\n" %(input_alignment,", ".join(taxa)))
 			raise SystemExit
@@ -192,7 +188,7 @@ class Alignment (Base):
 			alignment = self.alignment
 
 		# Writes file in phylip format
-		if output_format == "phylip":
+		if "phylip" in output_format:
 
 			out_file = open(output_file+".phy","w")
 			out_file.write("%s %s\n" % (len(alignment), self.loci_lengths))
@@ -206,7 +202,7 @@ class Alignment (Base):
 					partition_file.write("%s, %s = %s\n" % (model_phylip,partition,lrange))
 
 		# Writes file in nexus format
-		if output_format == "nexus":
+		if "nexus" in output_format:
 
 			out_file = open(output_file+".nex","w")
 			
@@ -254,10 +250,10 @@ class Alignment (Base):
 				out_file.write(";\n\tend;")
 
 		# Writes file in fasta format
-		if output_format == "fasta":
+		if "fasta" in output_format:
 			out_file = open(self.output_file+".fas","w")
-			for key in self.taxa_order:
-				out_file.write(">%s\n%s\n" % (key,alignment_dic[key]))				
+			for key,seq in self.alignment:
+				out_file.write(">%s\n%s\n" % (key,seq))				
 
 		out_file.close()
 
