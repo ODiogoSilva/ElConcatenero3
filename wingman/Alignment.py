@@ -40,6 +40,10 @@ class Alignment (Base):
 			# Get alignment format and code. Sequence code is a tuple of (DNA, N) or (Protein, X)
 			self.input_format, self.sequence_code = self.autofinder (input_alignment)
 
+			# In case the input format is specified, overwrite the attribute
+			if input_format != None or input_format != "guess":
+				self.input_format = input_format
+
 			# parsing the alignment and getting the basic class attributes
 			# Three attributes will be assigned: alignment, model and loci_lengths
 			self.read_alignment (input_alignment, self.input_format)
@@ -178,7 +182,7 @@ class Alignment (Base):
 
 		return correspondance_dic
 
-	def write_to_file (self, output_format, output_file, new_alignment = None, conversion=False seq_space_nex=40, seq_space_phy=30, seq_space_ima2=10, cut_space_nex=50, cut_space_phy=50, cut_space_ima2=8, conversion=None, form="leave", gap="-", missing="n", loci_range=[], model_phylip="LG", model_list=[]):
+	def write_to_file (self, output_format, output_file, new_alignment = None, seq_space_nex=40, seq_space_phy=30, seq_space_ima2=10, cut_space_nex=50, cut_space_phy=50, cut_space_ima2=8, conversion=None, form="leave", gap="-", missing="n", loci_range=[], model_phylip="LG", model_list=[]):
 		""" Writes the alignment object into a specified output file, automatically adding the extension, according to the output format """
 
 		# If this function is called in the AlignmentList class, there may be a need to specify a new alignment dictionary, such as a concatenated one
@@ -199,7 +203,7 @@ class Alignment (Base):
 			if conversion == None:
 				partition_file = open(output_file+"_part.File","a")
 				for partition,lrange in loci_range:
-					partition_file.write("%s, %s = %s\n" % (model_phylip,part, model_list=[]ition,lrange))
+					partition_file.write("%s, %s = %s\n" % (model_phylip,partition,lrange))
 
 		# Writes file in nexus format
 		if output_format == "nexus":
@@ -258,7 +262,7 @@ class Alignment (Base):
 		out_file.close()
 
 
-class AlignmentList (Base, Alignment):
+class AlignmentList (Alignment, Base):
 	""" At the most basic instance, this class contains a list of Alignment objects upon which several methods can be applied. It only requires a list of alignment files.
 
 		It inherits methods from Base and Alignment classes for the write_to_file methods """
