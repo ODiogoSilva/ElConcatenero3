@@ -27,8 +27,8 @@ from collections import OrderedDict
 
 class Alignment (Base):
 
-	def __init__ (self, input_alignment):
-		""" The basic Alignment class requires only an alignment file and returns an Alignment object """
+	def __init__ (self, input_alignment,input_format=None,model_list=None):
+		""" The basic Alignment class requires only an alignment file and returns an Alignment object. In case the class is initialized with a dictionary object, the input_format and model_list arguments can be used to provide complementary information for the class. However, if the class is not initialized with specific values for these arguments, they can be latter set using the _set_format and _set_model functions """
 
 		# TODO: I need to, somehow, incorporate the concatenated data set as an Alignment object in order to have access to its methods
 
@@ -47,12 +47,27 @@ class Alignment (Base):
 		# In case the class is initialized with a dictionay object
 		elif type(self.input_alignment) is dict:
 
+			self._init_dicObj(self.input_alignment)
+			self.input_format = input_format
+			self.model = model_list
 
+	def _set_format (self, input_format):
+		""" Use this function to manually set the input format associated with the Alignment object """
+
+		self.input_format = _set_format
+
+	def _set_model (self, model_list):
+		""" Use this function to manyally set the model associated with the Alignment object. Since this object supports concatenated alignments, the model specification must be in list format and the list size must be of the same size of the alignment partitions """
+
+		self.model = model_list
 
 	def _init_dicObj (self, dictionary_obj):
 		""" In case the class is initialized with a dictionary as input, this function will retrieve the same information as the read_alignment function would do  """
 
-		sequence_code = 
+		self.sequence_code = self.guess_code(list(dictionary_obj.values())[0])
+		self.alignment = dictionary_obj
+		self.loci_lengths = len(list(dictionary_obj.values())[0])
+
 		
 	def read_alignment (self, input_alignment, alignment_format, size_check=True):
 		""" The read_alignment method is run when the class is initialized to parse an alignment an set all the basic attributes of the class.
