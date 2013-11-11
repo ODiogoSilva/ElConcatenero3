@@ -155,6 +155,17 @@ class Alignment (Base):
 
 		return sequences
 
+	def remove_taxa (self, taxa_list):
+		""" Removes specified taxa from the alignment. taxa_list must be a list """
+
+		new_alignment = orderedDict()
+
+		for taxa,seq in self.alignment.items():
+			if not in taxa_list:
+				new_alignment[taxa] = seq
+
+		self.alignment = new_alignment
+
 	def collapse (self):
 		""" Collapses equal sequences into haplotypes. This method changes the alignment variable and only returns a dictionary with the correspondance between the haplotypes and the original taxa names  """
 
