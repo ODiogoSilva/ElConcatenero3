@@ -30,8 +30,6 @@ class Alignment (Base):
 	def __init__ (self, input_alignment,input_format=None,model_list=None):
 		""" The basic Alignment class requires only an alignment file and returns an Alignment object. In case the class is initialized with a dictionary object, the input_format and model_list arguments can be used to provide complementary information for the class. However, if the class is not initialized with specific values for these arguments, they can be latter set using the _set_format and _set_model functions """
 
-		# TODO: I need to, somehow, incorporate the concatenated data set as an Alignment object in order to have access to its methods
-
 		self.input_alignment = input_alignment
 
 		# In case the class is initialized with an input file name
