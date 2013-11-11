@@ -43,7 +43,7 @@ class Alignment (Base):
 				self.input_format = input_format
 
 			# parsing the alignment and getting the basic class attributes
-			# Three attributes will be assigned: alignment, model and loci_lengths
+			# Three attributes will be assigned: alignment, model and locus_length
 			self.read_alignment (input_alignment, self.input_format)
 
 		# In case the class is initialized with a dictionay object
@@ -68,7 +68,7 @@ class Alignment (Base):
 
 		self.sequence_code = self.guess_code(list(dictionary_obj.values())[0])
 		self.alignment = dictionary_obj
-		self.loci_lengths = len(list(dictionary_obj.values())[0])
+		self.locus_length = len(list(dictionary_obj.values())[0])
 
 		
 	def read_alignment (self, input_alignment, alignment_format, size_check=True):
@@ -76,7 +76,7 @@ class Alignment (Base):
 
 		The 'alignment' variable contains an ordered dictionary with the taxa names as keys and sequences as values
 		The 'model' is an non essential variable that contains a string with a substitution model of the alignment. This only applies to Nexus input formats, as it is the only supported format that contains such information 
-		The 'loci_lengths' variable contains a int value with the length of the current alignment """
+		The 'locus_length' variable contains a int value with the length of the current alignment """
 		
 		self.alignment = OrderedDict() # Storage taxa names and corresponding sequences in an ordered Dictionary
 		self.model = [] # Only applies for nexus format. It stores any potential substitution model at the end of the file
@@ -86,7 +86,7 @@ class Alignment (Base):
 		# PARSING PHYLIP FORMAT
 		if alignment_format == "phylip":
 			header = file_handle.readline().split() # Get the number of taxa and sequence length from the file header
-			self.loci_lengths = int(header[1])
+			self.locus_length = int(header[1])
 			for line in file_handle:
 				if line != "":
 					taxa = line.split()[0].replace(" ","")
@@ -105,7 +105,7 @@ class Alignment (Base):
 					self.alignment[taxa] = ""
 				elif line.strip() != "":
 					self.alignment[taxa] += line.strip()
-			self.loci_lengths = len(list(self.alignment.values())[0])
+			self.locus_length = len(list(self.alignment.values())[0])
 			
 		# PARSING NEXUS FORMAT
 		elif alignment_format == "nexus":
@@ -129,7 +129,7 @@ class Alignment (Base):
 				elif counter == 2 and line.lower().strip().startswith("prset"):
 					self.model.append(line.strip())
 
-			self.loci_lengths = len(list(self.alignment.values())[0])
+			self.locus_length = len(list(self.alignment.values())[0])
 		
 		# Checks the size consistency of the alignment
 		if size_check == True:
@@ -158,10 +158,10 @@ class Alignment (Base):
 	def remove_taxa (self, taxa_list):
 		""" Removes specified taxa from the alignment. taxa_list must be a list """
 
-		new_alignment = orderedDict()
+		new_alignment = OrderedDict()
 
 		for taxa,seq in self.alignment.items():
-			if not in taxa_list:
+			if taxa not in taxa_list:
 				new_alignment[taxa] = seq
 
 		self.alignment = new_alignment
@@ -169,7 +169,7 @@ class Alignment (Base):
 	def collapse (self):
 		""" Collapses equal sequences into haplotypes. This method changes the alignment variable and only returns a dictionary with the correspondance between the haplotypes and the original taxa names  """
 
-		collapsed_dic, correspondance_dic = orderedDict(), orderedDict()
+		collapsed_dic, correspondance_dic = OrderedDict(), OrderedDict()
 		counter = 1
 
 		for taxa, seq in self.alignment.items():
@@ -178,7 +178,7 @@ class Alignment (Base):
 			else:
 				collapsed_dic[seq] = [taxa]
 
-		self.alignment = orderedDict()
+		self.alignment = OrderedDict()
 		for seq, taxa_list in collapsed_dic.items():
 			haplotype = "Hap_%s" % (counter)
 			self.alignment[haplotype] = seq
@@ -200,7 +200,7 @@ class Alignment (Base):
 		if "phylip" in output_format:
 
 			out_file = open(output_file+".phy","w")
-			out_file.write("%s %s\n" % (len(alignment), self.loci_lengths))
+			out_file.write("%s %s\n" % (len(alignment), self.locus_length))
 			for key, seq in alignment.items():
 					out_file.write("%s %s\n" % (key[:cut_space_phy].ljust(seq_space_phy),seq))
 
@@ -217,9 +217,9 @@ class Alignment (Base):
 			
 			# This writes the output in interleave format
 			if form == "interleave":
-				out_file.write("#NEXUS\n\nBegin data;\n\tdimensions ntax=%s nchar=%s ;\n\tformat datatype=%s interleave=yes gap=%s missing=%s ;\n\tmatrix\n" % (len(alignment), self.loci_lengths, self.sequence_code[0], gap, missing))
+				out_file.write("#NEXUS\n\nBegin data;\n\tdimensions ntax=%s nchar=%s ;\n\tformat datatype=%s interleave=yes gap=%s missing=%s ;\n\tmatrix\n" % (len(alignment), self.locus_length, self.sequence_code[0], gap, missing))
 				counter = 0
-				for i in range (90,self.loci_lengths,90):
+				for i in range (90,self.locus_length,90):
 					for key, seq in alignment.items():
 						out_file.write("%s %s\n" % (key[:self.cut_space_nex].ljust(self.seq_space_nex),seq[counter:i]))
 					else:
@@ -227,7 +227,7 @@ class Alignment (Base):
 						counter = i				
 				else:
 					for key, seq in alignment.items():
-						out_file.write("%s %s\n" % (key[:self.cut_space_nex].ljust(self.seq_space_nex),seq[i:self.loci_lengths]))
+						out_file.write("%s %s\n" % (key[:self.cut_space_nex].ljust(self.seq_space_nex),seq[i:self.locus_length]))
 					else:
 						out_file.write("\n")
 				out_file.write(";\n\tend;")
@@ -253,7 +253,7 @@ class Alignment (Base):
 
 			# This writes the output in leave format (default)
 			else:
-				out_file.write("#NEXUS\n\nBegin data;\n\tdimensions ntax=%s nchar=%s ;\n\tformat datatype=%s interleave=no gap=%s missing=%s ;\n\tmatrix\n" % (len(alignment), self.loci_lengths, self.sequence_code, self.gap, self.missing))
+				out_file.write("#NEXUS\n\nBegin data;\n\tdimensions ntax=%s nchar=%s ;\n\tformat datatype=%s interleave=no gap=%s missing=%s ;\n\tmatrix\n" % (len(alignment), self.locus_length, self.sequence_code, self.gap, self.missing))
 				for key,seq in alignment.items():
 					out_file.write("%s %s\n" % (key[:self.cut_space_nex].ljust(self.seq_space_nex),seq))
 				out_file.write(";\n\tend;")
@@ -329,8 +329,7 @@ class AlignmentList (Alignment, Base):
 				for taxa in self.concatenation:
 					if taxa not in alignment_object.alignment: 
 						self.concatenation[taxa] += missing*alignment_object.loci_lengths
-		else:
-			print ("\n")
+
 
 		concatenated_alignment = Alignment(self.concatenation, input_format=self._get_format,model_list=self.models)
 		return concatenated_alignment
