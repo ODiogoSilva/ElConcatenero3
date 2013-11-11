@@ -23,7 +23,7 @@
 class Base ():
 
 	def autofinder (self, reference_file):
-	""" Autodetects the type of file to be parsed. Based on headers """
+		""" Autodetects the type of file to be parsed. Based on headers """
 		autofind = "unknown"
 		sequence = ""
 		file_handle = open(reference_file,'r')
