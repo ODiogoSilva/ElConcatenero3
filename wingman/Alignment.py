@@ -49,7 +49,7 @@ class Alignment (Base):
 			self.read_alignment (input_alignment, self.input_format)
 
 		# In case the class is initialized with a dictionay object
-		elif type(self.input_alignment) is dict:
+		elif type(self.input_alignment) is OrderedDict:
 
 			self._init_dicObj(self.input_alignment)
 			self.input_format = input_format
@@ -263,11 +263,14 @@ class AlignmentList (Alignment, Base):
 
 		It inherits methods from Base and Alignment classes for the write_to_file methods """
 
-	def __init__ (self, alignment_list):
+	def __init__ (self, alignment_list,verbose=True):
 
 		self.alignment_object_list = []
 
 		for alignment in alignment_list:
+
+			if verbose == True:
+				print ("\rParsing file %s out of %s" % (alignment_list.index(alignment), len(alignment_list)), end="")
 
 			alignment_object = Alignment(alignment)
 			self.alignment_object_list.append(alignment_object)
@@ -277,7 +280,7 @@ class AlignmentList (Alignment, Base):
 
 		return self.alignment_object_list[0].input_format
 
-	def concatenate (self, missing="n"):
+	def concatenate (self, missing="n", progress_stat=True):
 		""" The concatenate method will concatenate the multiple sequence alignments and create several attributes 
 
 		This method sets the first three variables below and the concatenation variable containing the dict object"""
@@ -290,7 +293,7 @@ class AlignmentList (Alignment, Base):
 			
 			# When set to True, this statement produces a progress status on the terminal
 			if progress_stat == True: 
-				print ("\rProcessing file %s out of %s" % (self.alignment_object_list.index(alignment_object)+1,len(self.alignment_object_list)),end="")
+				print ("\rConcatenating file %s out of %s" % (self.alignment_object_list.index(alignment_object)+1,len(self.alignment_object_list)),end="")
 
 			# If input format is nexus, save the substution model, if any
 			if alignment_object.input_format == "nexus" and alignment_object.model != []:
@@ -308,7 +311,6 @@ class AlignmentList (Alignment, Base):
 						self.concatenation[taxa] += sequence # Append the sequence from the current alignment to the respective taxa in the main alignment
 					elif taxa not in self.concatenation:
 						self.concatenation[taxa] = missing*sum(self.loci_lengths)+sequence # If the taxa does not yet exist in the main alignment, create the new entry with a sequence of 'n' characters of the same size as the length of the missed loci and the sequence from the current alignment
-						main_taxa_order.append(taxa)
 
 				# Saving the range for the subsequent loci
 				self.loci_range.append((alignment_object.input_alignment.split(".")[0],"%s-%s" % (sum(self.loci_lengths)+1, sum(self.loci_lengths)+alignment_object.loci_lengths)))
@@ -332,10 +334,10 @@ class AlignmentList (Alignment, Base):
 
 		return [alignment for alignment in self.alignment_object_list]
 
-	def write_to_file (self, output_format, output_file=None):
+	def write_to_file (self, output_format):
 		""" This method writes a list of alignment objects or a concatenated alignment into a file """
 
-		for alignment_obj in self.alignment_obj_list:
-			output_file_name = alignment_obj.input_file.split(".")[0]
+		for alignment_obj in self.alignment_object_list:
+			output_file_name = alignment_obj.input_alignment.split(".")[0]
 			alignment_obj.write_to_file(output_format, output_file=output_file_name)
 
