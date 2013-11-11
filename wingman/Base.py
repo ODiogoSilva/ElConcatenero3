@@ -56,7 +56,7 @@ class Base ():
 			sequence = "".join(file_handle.readline().split()[1:]).strip()
 		
 		# Guessing the genetic code
-		code = guess_code (sequence)
+		code = self.guess_code (sequence)
 		
 		return autofind, code
 
@@ -125,3 +125,12 @@ class Base ():
 			except:
 				print ("File not in correct Phylip format. First non-empty line of the input file %s does not start with two intergers separated by whitespace. Please verify the file, or the input format settings\nExiting..." % input_alignment)
 				raise SystemExit
+
+	def check_sizes (self, alignment_dic, current_file):
+		""" Function to test whether all sequences are of the same size and, if not, which are different """
+		# Determine the most common length 
+		commonSeq = max(set([v for v in alignment_dic.values()]),key=[v for v in alignment_dic.values()].count)
+		# Creates a dictionary with the sequences, and respective length, of different length
+		difLength = dict((key,value) for key, value in alignment_dic.items() if len(commonSeq) != len(value))
+		if difLength != {}:
+			print ("\nWARNING: Unequal sequence lenght detected in %s" % (current_file))
