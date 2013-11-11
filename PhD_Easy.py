@@ -114,7 +114,6 @@ def main_parser(alignment_list):
 	if len(alignment_list) == 1:
 
 		alignment = Alignment.Alignment("".join(alignment_list))
-		alignment.write_to_file(output_format, outfile)
 
 	else:
 
@@ -126,8 +125,9 @@ def main_parser(alignment_list):
 
 		else:
 
-			concatenated_alignment = alignments.concatenate()
-			concatenated_alignment.write_to_file (output_format, outfile)
+			alignment = alignments.concatenate()
+
+	alignment.write_to_file (output_format, outfile)
 
 
 	# if arg.input_format == "guess":
