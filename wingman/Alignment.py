@@ -30,14 +30,29 @@ class Alignment (Base):
 	def __init__ (self, input_alignment):
 		""" The basic Alignment class requires only an alignment file and returns an Alignment object """
 
+		# TODO: I need to, somehow, incorporate the concatenated data set as an Alignment object in order to have access to its methods
+
 		self.input_alignment = input_alignment
 
-		# Get alignment format and code
-		self.input_format, self.sequence_code = self.autofinder (input_alignment)
+		# In case the class is initialized with an input file name
+		if type(self.input_alignment) is str:
 
-		# parsing the alignment and getting the basic class attributes
-		# Three attributes will be assigned: alignment, model and loci_lengths
-		self.read_alignment (input_alignment, self.input_format)
+			# Get alignment format and code. Sequence code is a tuple of (DNA, N) or (Protein, X)
+			self.input_format, self.sequence_code = self.autofinder (input_alignment)
+
+			# parsing the alignment and getting the basic class attributes
+			# Three attributes will be assigned: alignment, model and loci_lengths
+			self.read_alignment (input_alignment, self.input_format)
+
+		# In case the class is initialized with a dictionay object
+		elif type(self.input_alignment) is dict:
+
+
+
+	def _init_dicObj (self, dictionary_obj):
+		""" In case the class is initialized with a dictionary as input, this function will retrieve the same information as the read_alignment function would do  """
+
+		sequence_code = 
 		
 	def read_alignment (self, input_alignment, alignment_format, size_check=True):
 		""" The read_alignment method is run when the class is initialized to parse an alignment an set all the basic attributes of the class.
@@ -178,7 +193,7 @@ class Alignment (Base):
 			
 			# This writes the output in interleave format
 			if form == "interleave":
-				out_file.write("#NEXUS\n\nBegin data;\n\tdimensions ntax=%s nchar=%s ;\n\tformat datatype=%s interleave=yes gap=%s missing=%s ;\n\tmatrix\n" % (len(alignment), self.loci_lengths, self.sequence_code, gap, missing))
+				out_file.write("#NEXUS\n\nBegin data;\n\tdimensions ntax=%s nchar=%s ;\n\tformat datatype=%s interleave=yes gap=%s missing=%s ;\n\tmatrix\n" % (len(alignment), self.loci_lengths, self.sequence_code[0], gap, missing))
 				counter = 0
 				for i in range (90,self.loci_lengths,90):
 					for key, seq in alignment.items():
