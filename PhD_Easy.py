@@ -39,9 +39,8 @@ main_exec.add_argument("-o",dest="outfile",help="Name of the output file")
 # Alternative modes
 alternative = parser.add_argument_group("Alternative execution modes")
 alternative.add_argument("-c",dest="conversion",action="store_const",const=True,help="Used for convertion of the input files passed as arguments with the -in option. This flag precludes the usage of the -o option, as the output file name is automatically generated based on the input file name")
-#alternative.add_argument("-r",dest="reverse",help="Reverse a concatenated file into its original single locus alignments. A partition file similar to the one read by RAxML must be provided")
-#alternative.add_argument("-z",dest="zorro",action="store_const",const=True,help="Use this option if you wish to concatenate auxiliary Zorro files associated with each alignment. Note that the auxiliary files must have the same prefix of the alignment file, with the addition of '_zorro.out'")
-alternative.add_argument("-z","--zorro-suffix",dest="zorro_infile",type=str, default="_zorro.out",help="Provide the sufix for the concatenated zorro file (default is '%(default)s')")
+alternative.add_argument("-r",dest="reverse",help="Reverse a concatenated file into its original single locus alignments. A partition file similar to the one read by RAxML must be provided")
+alternative.add_argument("-z","--zorro-suffix",dest="zorro",type=str, help="Use this option if you wish to concatenate auxiliary Zorro files associated with each alignment. Provide the sufix for the concatenated zorro file")
 alternative.add_argument("-p","--partition-file", dest="partition_file", type=str, help="Using this option and providing the partition file will convert it between a RAxML or Nexus format")
 
 # Formatting options
@@ -102,6 +101,13 @@ def main_parser(alignment_list):
 		# In case only one alignment
 		alignment = Alignment.Alignment("".join(alignment_list))
 
+		# If only to reverse a concatenated alignment into individual loci do this and exit
+		if arg.reverse != None:
+			partition = Data.Partitions(arg.reverse)
+			reverse_alignments = alignment.reverse_concatenate(partition)
+			reverse_alignments.write_to_file(output_format)
+			return 0
+
 	else:
 
 		# With many alignments
@@ -110,6 +116,7 @@ def main_parser(alignment_list):
 		if arg.conversion != None:
 
 			alignments.write_to_file(output_format)
+			return 0
 
 		else:
 
@@ -130,24 +137,9 @@ def main_parser(alignment_list):
 
 	# In case zorro weigth files are provide, write the concatenated file 
 	if arg.zorro != None:
+		print (arg.zorro)
 		zorro.write_to_file(outfile)
 
-	
-	# If runnning reverse concatenation mode do this and quit
-	# if arg.reverse != None:
-	# 	partitions = main_instance.get_partitions(arg.reverse)
-	# 	alignment_list = main_instance.reverse_concatenation(alignment_storage[0], partitions)
-	# 	output_instance = ep.writer() # Initiating main output instance
-	# 	output_instance.define_args(outfile, alignment_storage[1], coding, alignment_storage[2], alignment_storage[3],missing=missing_sym, models=model) # Providing main arguments for the output instance
-	# 	output_instance.reverse_wrapper(alignment_list, "".join(output_format))
-	# 	print ("Reverse concatenation complete!")
-	# 	return 0
-	
-	# If the --pickle-taxa option is used, this code executes both loading and dumping operations
-	# They can only be used separately, though.
-	# if arg.pickle != None:
-	# 	main_instance.pickle_taxa(alignment_dic,"".join(arg.pickle))
-	# 	alignment_dic, taxa_order = main_instance.import_taxa(alignment_dic,len(list(alignment_dic.values())[0]),missing_sym)
 		
 #def main_check ():
 	# if arg.charset != None and arg.outfile == None:
@@ -174,11 +166,7 @@ def main_parser(alignment_list):
 				
 def main():
 	#main_check()
-	if arg.conversion != None and len(arg.infile) > 1:
-		for infile in arg.infile:
-			main_parser([infile])		
-	else:
-		main_parser(arg.infile)
+	main_parser(arg.infile)
 
 ##### EXECUTION ######
 
