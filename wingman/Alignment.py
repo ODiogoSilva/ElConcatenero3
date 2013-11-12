@@ -240,13 +240,13 @@ class Alignment (Base):
 				counter = 0
 				for i in range (90,self.locus_length,90):
 					for key, seq in alignment.items():
-						out_file.write("%s %s\n" % (key[:self.cut_space_nex].ljust(self.seq_space_nex),seq[counter:i]))
+						out_file.write("%s %s\n" % (key[:cut_space_nex].ljust(seq_space_nex),seq[counter:i]))
 					else:
 						out_file.write("\n")
 						counter = i				
 				else:
 					for key, seq in alignment.items():
-						out_file.write("%s %s\n" % (key[:self.cut_space_nex].ljust(self.seq_space_nex),seq[i:self.locus_length]))
+						out_file.write("%s %s\n" % (key[:cut_space_nex].ljust(seq_space_nex),seq[i:self.locus_length]))
 					else:
 						out_file.write("\n")
 				out_file.write(";\n\tend;")
@@ -373,10 +373,10 @@ class AlignmentList (Alignment, Base):
 
 		return [alignment for alignment in self.alignment_object_list]
 
-	def write_to_file (self, output_format):
+	def write_to_file (self, output_format, form="leave"):
 		""" This method writes a list of alignment objects or a concatenated alignment into a file """
 
 		for alignment_obj in self.alignment_object_list:
 			output_file_name = alignment_obj.input_alignment.split(".")[0]
-			alignment_obj.write_to_file(output_format, output_file=output_file_name, conversion=True)
+			alignment_obj.write_to_file(output_format, output_file=output_file_name, conversion=True, form=form)
 
