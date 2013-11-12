@@ -133,18 +133,6 @@ def main_parser(alignment_list):
 		zorro.write_to_file(outfile)
 
 	
-	# # Parsing input file(s)
-	# if len(alignment_list) == 1:
-	# 	input_alignment = "".join(alignment_list)
-	# 	alignment_storage = main_instance.read_alignment(input_alignment, input_format)
-	# 	model = alignment_storage[3]
-	# else:
-	# 	alignment_storage = main_instance.read_alignments(alignment_list, input_format,missing=missing_sym)
-	# 	model = alignment_storage[4]
-	# 	if arg.zorro != None:
-	# 		zorro_code = arg.zorro_infile
-	# 		zorro_weigths = main_instance.zorro2rax(alignment_list,zorro_code)
-	
 	# If runnning reverse concatenation mode do this and quit
 	# if arg.reverse != None:
 	# 	partitions = main_instance.get_partitions(arg.reverse)
