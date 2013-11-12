@@ -23,7 +23,9 @@
 
 class Partitions ():
 	""" The Partitions class is used to parse and work with partition files. Currently the supported input formats are RAxML partition files and Nexus chartset blocks. To initialize a class, only a file partition file is required. """
-	def __init__ (self, partition_file):
+	def __init__ (self, partition_file, model_nexus="LG"):
+
+		self.model_nexus = model_nexus
 
 		self.partitions = self._get_partitions(partition_file)
 
@@ -45,7 +47,7 @@ class Partitions ():
 		return partition_format
 
 	def _get_partitions (self, partitions_file):
-		""" This function parses a file containing partitions. Supports partitions files similar to RAxML's and NEXUS charset blocks. The NEXUS file, however, must only contain the charset block """
+		""" This function parses a file containing partitions. Supports partitions files similar to RAxML's and NEXUS charset blocks. The NEXUS file, however, must only contain the charset block. The model_nexus argument provides a namespace for the model variable in the nexus format, since this information is not present in the file. However, it assures consistency on the Partition object """
 		
 		# Get the format of the partition file
 		self.partition_format = self._get_format (partitions_file)
@@ -67,7 +69,7 @@ class Partitions ():
 				fields = line.split("=")
 				partition_name = fields[0].split()[1]
 				partition_range = fields[1].replace(";","").strip().split("-")
-				partition_storage.append((partition_name, partition_range)) # Format of partition storage: ["str", ["str","str"]]
+				partition_storage.append((self.model_nexus, partition_name, partition_range)) # Format of partition storage: ["str", str", ["str","str"]]
 			
 		return partition_storage
 

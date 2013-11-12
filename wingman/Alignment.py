@@ -27,14 +27,13 @@ from collections import OrderedDict
 
 class Alignment (Base):
 
-	def __init__ (self, input_alignment,input_format=None,model_list=None):
-		""" The basic Alignment class requires only an alignment file and returns an Alignment object. In case the class is initialized with a dictionary object, the input_format and model_list arguments can be used to provide complementary information for the class. However, if the class is not initialized with specific values for these arguments, they can be latter set using the _set_format and _set_model functions """
-
-		self.input_alignment = input_alignment
+	def __init__ (self, input_alignment,input_format=None,model_list=None, alignment_name=None):
+		""" The basic Alignment class requires only an alignment file and returns an Alignment object. In case the class is initialized with a dictionary object, the input_format, model_list and alignment_name arguments can be used to provide complementary information for the class. However, if the class is not initialized with specific values for these arguments, they can be latter set using the _set_format and _set_model functions """
 
 		# In case the class is initialized with an input file name
 		if type(self.input_alignment) is str:
 
+			self.input_alignment = input_alignment
 			# Get alignment format and code. Sequence code is a tuple of (DNA, N) or (Protein, X)
 			self.input_format, self.sequence_code = self.autofinder (input_alignment)
 
@@ -49,6 +48,7 @@ class Alignment (Base):
 		# In case the class is initialized with a dictionay object
 		elif type(self.input_alignment) is OrderedDict:
 
+			self.input_alignment = alignment_name
 			self._init_dicObj(self.input_alignment)
 			self.input_format = input_format
 			self.model = model_list
@@ -187,6 +187,25 @@ class Alignment (Base):
 
 		return correspondance_dic
 
+	def reverse_concatenate (self, partition_obj):
+		""" This function divides a concatenated file according previously defined partitions """
+
+		alignment_list, models, names = []
+
+		for model, name, part_range in partition_obj.partitions:
+			partition_dic = orderedDict()
+			for taxon, seq in self.alignment.items():
+				sub_seq = seq[int(part_range[0])-1:int(part_range[1])-1]
+				if sub_seq.replace(self.sequence_code[1],"") != "":
+					partition_dic[taxon] = sub_seq
+			alignment_list.append(partition_dic)
+			models.append(model)
+			names.append(name)
+
+		alignmentlist_obj = AlignmentList (alignment_list, model_list=models, name_list=names)
+
+		return alignmentlist_obj
+
 	def write_to_file (self, output_format, output_file, new_alignment = None, seq_space_nex=40, seq_space_phy=30, seq_space_ima2=10, cut_space_nex=50, cut_space_phy=50, cut_space_ima2=8, conversion=None, form="leave", gap="-", missing="n", loci_range=[], model_phylip="LG", model_list=[]):
 		""" Writes the alignment object into a specified output file, automatically adding the extension, according to the output format """
 
@@ -268,21 +287,31 @@ class Alignment (Base):
 
 
 class AlignmentList (Alignment, Base):
-	""" At the most basic instance, this class contains a list of Alignment objects upon which several methods can be applied. It only requires a list of alignment files.
+	""" At the most basic instance, this class contains a list of Alignment objects upon which several methods can be applied. It only requires either a list of alignment files or .
 
 		It inherits methods from Base and Alignment classes for the write_to_file methods """
 
-	def __init__ (self, alignment_list,verbose=True):
+	def __init__ (self, alignment_list, model_list=None, name_list=None, verbose=True):
 
 		self.alignment_object_list = []
 
-		for alignment in alignment_list:
+		if alignment_list[0] is str:
 
-			if verbose == True:
-				print ("\rParsing file %s out of %s" % (alignment_list.index(alignment), len(alignment_list)), end="")
+			for alignment in alignment_list:
 
-			alignment_object = Alignment(alignment)
-			self.alignment_object_list.append(alignment_object)
+				if verbose == True:
+					print ("\rParsing file %s out of %s" % (alignment_list.index(alignment), len(alignment_list)), end="")
+
+				alignment_object = Alignment(alignment)
+				self.alignment_object_list.append(alignment_object)
+
+		elif alignment_list[0] is OrderedDict:
+
+			for alignment in alignment_list:
+
+				alignment_object = Alignment(alignment, model_list=model_list)
+				self.alignment_object_list.append(alignment_object)
+
 
 	def _get_format (self):
 		""" Gets the input format of the first alignment in the list """
@@ -331,7 +360,7 @@ class AlignmentList (Alignment, Base):
 						self.concatenation[taxa] += missing*alignment_object.loci_lengths
 
 
-		concatenated_alignment = Alignment(self.concatenation, input_format=self._get_format,model_list=self.models)
+		concatenated_alignment = Alignment(self.concatenation, input_format=self._get_format(),model_list=self.models)
 		return concatenated_alignment
 
 	def iter_alignment_dic (self):
