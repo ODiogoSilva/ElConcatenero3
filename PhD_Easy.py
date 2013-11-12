@@ -54,7 +54,7 @@ formatting.add_argument("-m",dest="missing",default="n",help="Symbol for missing
 
 # Data manipulation
 manipulation = parser.add_argument_group("Data manipultation")
-#manipulation.add_argument("-rm",dest="remove",nargs="*",help="Removes the specified taxa from the final alignment. Multiple taxa may be specified and separated by whitespace")
+manipulation.add_argument("-rm",dest="remove",nargs="*",help="Removes the specified taxa from the final alignment. Multiple taxa may be specified and separated by whitespace")
 #manipulation.add_argument("--pickle-taxa",dest="pickle", choices=["dump","load"],help="Dump option: Only output a pickle object with the taxa names of the input alignment; Load option: loads the taxa names from a pickle object to be incorporated in the output alignment")
 
 # Additional data checks
@@ -127,18 +127,13 @@ def main_parser(alignment_list):
 
 			alignment = alignments.concatenate()
 
+	# Removing taxa
+	if arg.remove != None:
+
+		alignment.remove_taxa(arg.remove)
+
 	alignment.write_to_file (output_format, outfile)
 
-
-	# if arg.input_format == "guess":
-	# 	auto_format = ep.autofinder (alignment_list[0]) # The script will guess the input format of the first alignment in the list
-	# 	if auto_format[0] != "unknown":
-	# 		input_format = auto_format[0]
-	# 		coding = auto_format[1][0]
-	# 		missing_sym = auto_format[1][1]
-	# 		print ("Input format set to %s.\nGenetic code set to %s." % (auto_format[0],auto_format[1][0]))
-	# 	else:
-	# 		print ("Input format could not be determined. Falling back to default values...")
 	
 	# # Parsing input file(s)
 	# if len(alignment_list) == 1:
