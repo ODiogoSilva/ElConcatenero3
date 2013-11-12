@@ -31,7 +31,7 @@ class Alignment (Base):
 		""" The basic Alignment class requires only an alignment file and returns an Alignment object. In case the class is initialized with a dictionary object, the input_format, model_list and alignment_name arguments can be used to provide complementary information for the class. However, if the class is not initialized with specific values for these arguments, they can be latter set using the _set_format and _set_model functions """
 
 		# In case the class is initialized with an input file name
-		if type(self.input_alignment) is str:
+		if type(input_alignment) is str:
 
 			self.input_alignment = input_alignment
 			# Get alignment format and code. Sequence code is a tuple of (DNA, N) or (Protein, X)
@@ -46,10 +46,10 @@ class Alignment (Base):
 			self.read_alignment (input_alignment, self.input_format)
 
 		# In case the class is initialized with a dictionay object
-		elif type(self.input_alignment) is OrderedDict:
+		elif type(input_alignment) is OrderedDict:
 
 			self.input_alignment = alignment_name
-			self._init_dicObj(self.input_alignment)
+			self._init_dicObj(input_alignment)
 			self.input_format = input_format
 			self.model = model_list
 
@@ -188,12 +188,12 @@ class Alignment (Base):
 		return correspondance_dic
 
 	def reverse_concatenate (self, partition_obj):
-		""" This function divides a concatenated file according previously defined partitions """
+		""" This function divides a concatenated file according previously defined partitions and returns an AlignmentList object """
 
-		alignment_list, models, names = []
+		alignment_list, models, names = [], [], []
 
 		for model, name, part_range in partition_obj.partitions:
-			partition_dic = orderedDict()
+			partition_dic = OrderedDict()
 			for taxon, seq in self.alignment.items():
 				sub_seq = seq[int(part_range[0])-1:int(part_range[1])-1]
 				if sub_seq.replace(self.sequence_code[1],"") != "":
@@ -250,13 +250,22 @@ class Alignment (Base):
 					else:
 						out_file.write("\n")
 				out_file.write(";\n\tend;")
+				
+
+			# This writes the output in leave format (default)
+			else:
+				out_file.write("#NEXUS\n\nBegin data;\n\tdimensions ntax=%s nchar=%s ;\n\tformat datatype=%s interleave=no gap=%s missing=%s ;\n\tmatrix\n" % (len(alignment), self.locus_length, self.sequence_code[0], gap, missing))
+				for key,seq in alignment.items():
+					out_file.write("%s %s\n" % (key[:cut_space_nex].ljust(seq_space_nex),seq))
+				out_file.write(";\n\tend;")
+
 
 			if conversion == False:
 				out_file.write("\nbegin mrbayes;\n")
 				for partition,lrange in loci_range:
 					out_file.write("\tcharset %s = %s;\n" % (partition,lrange))
 				out_file.write("\tpartition part = %s: %s;\n\tset partition=part;\nend;\n" % (len(loci_range),", ".join([part[0] for part in loci_range])))
-				
+
 				# Concatenates the substitution models of the individual partitions
 				if model_list != []:
 					loci_number = 1
@@ -270,17 +279,10 @@ class Alignment (Base):
 						loci_number += 1
 					out_file.write("end;\n")
 
-			# This writes the output in leave format (default)
-			else:
-				out_file.write("#NEXUS\n\nBegin data;\n\tdimensions ntax=%s nchar=%s ;\n\tformat datatype=%s interleave=no gap=%s missing=%s ;\n\tmatrix\n" % (len(alignment), self.locus_length, self.sequence_code, self.gap, self.missing))
-				for key,seq in alignment.items():
-					out_file.write("%s %s\n" % (key[:self.cut_space_nex].ljust(self.seq_space_nex),seq))
-				out_file.write(";\n\tend;")
-
 		# Writes file in fasta format
 		if "fasta" in output_format:
-			out_file = open(self.output_file+".fas","w")
-			for key,seq in self.alignment:
+			out_file = open(output_file+".fas","w")
+			for key,seq in self.alignment.items():
 				out_file.write(">%s\n%s\n" % (key,seq))				
 
 		out_file.close()
@@ -295,7 +297,7 @@ class AlignmentList (Alignment, Base):
 
 		self.alignment_object_list = []
 
-		if alignment_list[0] is str:
+		if type(alignment_list[0]) is str:
 
 			for alignment in alignment_list:
 
@@ -305,11 +307,11 @@ class AlignmentList (Alignment, Base):
 				alignment_object = Alignment(alignment)
 				self.alignment_object_list.append(alignment_object)
 
-		elif alignment_list[0] is OrderedDict:
+		elif type(alignment_list[0]) is OrderedDict:
 
-			for alignment in alignment_list:
+			for alignment, model, name in zip(alignment_list, model_list, name_list):
 
-				alignment_object = Alignment(alignment, model_list=model_list)
+				alignment_object = Alignment(alignment, model_list=[model], alignment_name=name)
 				self.alignment_object_list.append(alignment_object)
 
 
@@ -376,5 +378,5 @@ class AlignmentList (Alignment, Base):
 
 		for alignment_obj in self.alignment_object_list:
 			output_file_name = alignment_obj.input_alignment.split(".")[0]
-			alignment_obj.write_to_file(output_format, output_file=output_file_name)
+			alignment_obj.write_to_file(output_format, output_file=output_file_name, conversion=True)
 
