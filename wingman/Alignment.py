@@ -166,7 +166,7 @@ class Alignment (Base):
 
 		self.alignment = new_alignment
 
-	def collapse (self):
+	def collapse (self, write_haplotypes=True, haplotypes_file=None):
 		""" Collapses equal sequences into haplotypes. This method changes the alignment variable and only returns a dictionary with the correspondance between the haplotypes and the original taxa names  """
 
 		collapsed_dic, correspondance_dic = OrderedDict(), OrderedDict()
@@ -185,7 +185,21 @@ class Alignment (Base):
 			correspondance_dic[haplotype] = taxa_list
 			counter += 1
 
-		return correspondance_dic
+		if write_haplotypes == True:
+			# If no output file for the haplotype correspondance is provided, use the input alignment name as reference
+			if haplotypes_file == None:
+				haplotypes_file = self.input_alignment.split(".")[0]
+			self._write_loci_correspondance(correspondance_dic, haplotypes_file)
+
+	def _write_loci_correspondance (self, dic_obj, output_file):
+		""" This function supports the collapse method by writing the correspondance between the unique haplotypes and the loci into a new file """
+
+		output_handle = open(output_file+".haplotypes","w")
+
+		for haplotype, taxa_list in dic_obj.items():
+			output_handle.write("%s: %s\n" % (haplotype, "; ".join(taxa_list)))
+
+		output_handle.close()
 
 	def reverse_concatenate (self, partition_obj):
 		""" This function divides a concatenated file according previously defined partitions and returns an AlignmentList object """
