@@ -85,6 +85,30 @@ class Partitions ():
 			outfile_handle = open(output_file+".charset","w")
 			for part in self.partitions:
 				outfile_handle.write("charset %s = %s;\n" % (part[1],"-".join(part[2])))
-				
+
 		outfile_handle.close()
 		return 0
+
+class Zorro ():
+
+	def __init__ (self, alignment_list, suffix="_zorro.out"):
+
+		self.suffix = suffix
+		self.weigth_values = self._zorro2rax(alignment_list)
+
+		def _zorro2rax (self, alignment_list):
+			""" Function that converts the floating point numbers contained in the original zorro output files into intergers that can be interpreted by RAxML. If multiple alignment files are provided, it also concatenates them in the same order """
+			weigths_storage = []
+			for alignment_file in alignment_list:
+				zorro_file = alignment_file.split(".")[0]+self.suffix # This assumes that the prefix of the alignment file is shared with the corresponding zorro file
+				zorro_handle = open(zorro_file)
+				weigths_storage += [round(float(weigth.strip())) for weigth in zorro_handle]
+			return weigths_storage
+
+		def write_to_file (self, output_file):
+			""" Creates a concatenated file with the zorro weigths for the corresponding alignment files """
+			outfile = output_file+"_zorro.out"
+			outfile_handle = open(outfile,"w")
+			for weigth in zorro_weigths:
+				outfile_handle.write("%s\n" % weigth)
+			outfile_handle.close()
