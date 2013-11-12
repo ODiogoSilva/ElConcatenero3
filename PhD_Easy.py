@@ -43,6 +43,7 @@ alternative.add_argument("-c",dest="conversion",action="store_const",const=True,
 alternative.add_argument("-r",dest="reverse",help="Reverse a concatenated file into its original single locus alignments. A partition file similar to the one read by RAxML must be provided")
 alternative.add_argument("-z","--zorro-suffix",dest="zorro",type=str, help="Use this option if you wish to concatenate auxiliary Zorro files associated with each alignment. Provide the sufix for the concatenated zorro file")
 alternative.add_argument("-p","--partition-file", dest="partition_file", type=str, help="Using this option and providing the partition file will convert it between a RAxML or Nexus format")
+alternative.add_argument("--collapse", dest="collapse",action="store_const",const=True, default=False, help="Use this flag if you would like to collapse the input alignment(s) into unique haplotypes")
 
 # Formatting options
 formatting = parser.add_argument_group("Formatting options")
@@ -101,8 +102,8 @@ def main_parser(alignment_list):
 			partition.write_to_file("nexus", outfile)
 		return 0
 
-	# From here, the input file is mandatory
 
+	# From here, the input file is mandatory
 	if len(alignment_list) == 1:
 
 		# In case only one alignment
@@ -138,6 +139,8 @@ def main_parser(alignment_list):
 
 		alignment.remove_taxa(arg.remove)
 
+	# Collapsing the alignment
+	alignment.collapse(haplotypes_file=outfile)
 
 	## Writing files
 	alignment.write_to_file (output_format, outfile, form=sequence_format)
@@ -158,8 +161,8 @@ def main_check ():
 	if arg.conversion == None and arg.outfile == None and arg.reverse == None:
 		raise ArgumentError("If you wish to concatenate provide the output file name using the '-o' option. If you wish to convert a file, specify it using the '-c' option")
 		
-	if len(arg.infile) == 1 and arg.conversion == None and arg.reverse == None:
-		raise ArgumentError ("ArgumentError: Cannot perform concatenation of a single file. Please provide additional files to concatenate, or specify the conversion '-c' option")
+	if len(arg.infile) == 1 and arg.conversion == None and arg.reverse == None and arg.collapse == None:
+		raise ArgumentError ("Cannot perform concatenation of a single file. Please provide additional files to concatenate, or specify the conversion '-c' option")
 		
 	if arg.zorro != None and len(arg.infile) == 1:
 		raise ArgumentError ("The '-z' option cannot be invoked when only a single input file is provided. This option is reserved for concatenation of multiple alignment files")
