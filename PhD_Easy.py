@@ -22,7 +22,7 @@
 
 import argparse
 #import ElParsito3 as ep
-from wingman import Alignment
+from wingman import Alignment,Data
 
 
 ##### ARGUMENT LIST ######
@@ -42,13 +42,12 @@ alternative.add_argument("-c",dest="conversion",action="store_const",const=True,
 #alternative.add_argument("-r",dest="reverse",help="Reverse a concatenated file into its original single locus alignments. A partition file similar to the one read by RAxML must be provided")
 #alternative.add_argument("-z",dest="zorro",action="store_const",const=True,help="Use this option if you wish to concatenate auxiliary Zorro files associated with each alignment. Note that the auxiliary files must have the same prefix of the alignment file, with the addition of '_zorro.out'")
 #alternative.add_argument("-zfile",dest="zorro_infile",nargs="*",default="_zorro.out",help="Provide the sufix for the concatenated zorro file (default is '%(default)s')")
-#alternative.add_argument("-charset",dest="charset",help="Format the partition file of RAxML into a charset analogous to the Nexus block. A partition file similar to the one read by RAxML must be provided")
-#alternative.add_argument("-partfile",dest="partfile",help="Format the charset analogous to the Nexus block into the partition file of RAxML")
+alternative.add_argument("-p","--partition-file", dest="partition_file", type=str, help="Using this option and providing the partition file will convert it between a RAxML or Nexus format")
 
 # Formatting options
 formatting = parser.add_argument_group("Formatting options")
-formatting.add_argument("-model",dest="model_phy",default="WAG",choices=["DAYHOFF","DCMUT","JTT","MTREV","WAG","RTREV","CPREV","VT","BLOSUM62","MTMAM","LG"],help="This option only applies for the concatenation of protein data into phylip format. Specify the model for all partitions defined in the partition file")
-formatting.add_argument("-interleave",dest="interleave",action="store_const",const="interleave",help="Specificy this option to write output files in interleave format (currently only supported for nexus files")
+formatting.add_argument("-model",dest="model_phy",default="LG",choices=["DAYHOFF","DCMUT","JTT","MTREV","WAG","RTREV","CPREV","VT","BLOSUM62","MTMAM","LG"],help="This option only applies for the concatenation of protein data into phylip format. Specify the model for all partitions defined in the partition file (default is '%(default)s')")
+#formatting.add_argument("-interleave",dest="interleave",action="store_const",const="interleave",help="Specificy this option to write output files in interleave format (currently only supported for nexus files")
 formatting.add_argument("-g",dest="gap",default="-",help="Symbol for gap (default is '%(default)s')")
 formatting.add_argument("-m",dest="missing",default="n",help="Symbol for missing data (default is '%(default)s')")
 
@@ -56,10 +55,6 @@ formatting.add_argument("-m",dest="missing",default="n",help="Symbol for missing
 manipulation = parser.add_argument_group("Data manipultation")
 manipulation.add_argument("-rm",dest="remove",nargs="*",help="Removes the specified taxa from the final alignment. Multiple taxa may be specified and separated by whitespace")
 #manipulation.add_argument("--pickle-taxa",dest="pickle", choices=["dump","load"],help="Dump option: Only output a pickle object with the taxa names of the input alignment; Load option: loads the taxa names from a pickle object to be incorporated in the output alignment")
-
-# Additional data checks
-checks = parser.add_argument_group("Additional data checks")
-checks.add_argument("--check",dest="check",action="store_const",const=True,help="Provides a final check for the lengths of the alignment sequences")
 
 arg = parser.parse_args()
 
@@ -75,10 +70,10 @@ def main_parser(alignment_list):
 	input_format = arg.input_format
 	output_format = arg.output_format
 	outfile = arg.outfile
-	interleave = arg.interleave
+	#interleave = arg.interleave
 	model_phy = arg.model_phy
 
-		# Defining output file name
+	# Defining output file name
 	if arg.conversion == None and arg.outfile != None:
 		outfile = "".join(arg.outfile)
 	elif arg.conversion != None and arg.outfile != None:
@@ -92,24 +87,16 @@ def main_parser(alignment_list):
 
 	# The input file at this stage is not necessary
 	# If just converting the partition file format do this and exit
-	# if arg.charset != None:
-	# 	partitions = main_instance.get_partitions(arg.charset)
-	# 	output_instance = ep.writer()
-	# 	output_instance.define_args(output_file = outfile)
-	# 	output_instance.write_charset(partitions)
-	# 	print ("Partitions formatting done!")
-	# 	return 0
-		
-	# if arg.partfile != None:
-	# 	partitions = main_instance.get_partitions(arg.partfile)
-	# 	output_instance = ep.writer()
-	# 	output_instance.define_args(output_file = outfile)
-	# 	output_instance.write_partitions(partitions,model=arg.model_phy)
-	# 	print ("Partitions formatting done!")
-	# 	return 0
+	if arg.partition_file != None:
+		# Initializing Partitions instance
+		partition = Data.Partitions(arg.partition_file)
+		if partition.partition_format == "nexus":
+			partition.write_to_file("raxml", outfile, model_phy)
+		else:
+			partition.write_to_file("nexus", outfile)
+		return 0
 
 	# From here, the input file is mandatory
-	# Guessing input format
 
 	if len(alignment_list) == 1:
 
@@ -156,47 +143,12 @@ def main_parser(alignment_list):
 	# 	output_instance.reverse_wrapper(alignment_list, "".join(output_format))
 	# 	print ("Reverse concatenation complete!")
 	# 	return 0
-
-	# Removes specified taxa, if the option was declared. Otherwise, continue with the original alignment
-	# if arg.remove != None:
-	# 	alignment_dic, taxa_order = main_instance.rm_taxa(alignment_storage[0],arg.remove)
-	# else:
-	# 	alignment_dic = alignment_storage[0]
-	# 	taxa_order = alignment_storage[1]
 	
 	# If the --pickle-taxa option is used, this code executes both loading and dumping operations
 	# They can only be used separately, though.
 	# if arg.pickle != None:
 	# 	main_instance.pickle_taxa(alignment_dic,"".join(arg.pickle))
 	# 	alignment_dic, taxa_order = main_instance.import_taxa(alignment_dic,len(list(alignment_dic.values())[0]),missing_sym)
-		
-	# Final consistency check of sequence lengths
-	# if arg.check != None:
-	# 	main_instance.check_sizes( alignment_dic, "Concatenated")					
-	
-					
-	# Creating main output instance
-	# output_instance = ep.writer()
-	# output_instance.define_args(outfile, taxa_order, coding, alignment_storage[2], alignment_storage[3],missing=missing_sym, models=model)
-	
-	# Creating output file(s)
-	# if "fasta" in output_format:
-	# 	output_instance.fasta(alignment_dic,conversion)
-	# if "phylip" in output_format:
-	# 	output_instance.phylip(alignment_dic,model_phy,conversion)
-	# if "nexus" in output_format:
-	# 	output_instance.nexus(alignment_dic,conversion,interleave)
-	# if arg.zorro != None:
-	# 	output_instance.zorro(zorro_weigths)
-	# if "mcmctree" in output_format:
-	# 	if arg.charset == None and arg.partfile == None:
-	# 		output_instance.mcmctree(alignment_dic, arg.partfile)
-	# 	else:
-	# 		if arg.partfile == None:
-	# 			output_instance.mcmctree(alignment_dic, arg.charset)
-	# 		else:
-	# 			output_instance.mcmctree(alignment_dic, arg.partfile)
-
 		
 #def main_check ():
 	# if arg.charset != None and arg.outfile == None:
