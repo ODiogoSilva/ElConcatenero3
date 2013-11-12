@@ -41,7 +41,7 @@ alternative = parser.add_argument_group("Alternative execution modes")
 alternative.add_argument("-c",dest="conversion",action="store_const",const=True,help="Used for convertion of the input files passed as arguments with the -in option. This flag precludes the usage of the -o option, as the output file name is automatically generated based on the input file name")
 #alternative.add_argument("-r",dest="reverse",help="Reverse a concatenated file into its original single locus alignments. A partition file similar to the one read by RAxML must be provided")
 #alternative.add_argument("-z",dest="zorro",action="store_const",const=True,help="Use this option if you wish to concatenate auxiliary Zorro files associated with each alignment. Note that the auxiliary files must have the same prefix of the alignment file, with the addition of '_zorro.out'")
-#alternative.add_argument("-zfile",dest="zorro_infile",nargs="*",default="_zorro.out",help="Provide the sufix for the concatenated zorro file (default is '%(default)s')")
+alternative.add_argument("-z","--zorro-suffix",dest="zorro_infile",type=str, default="_zorro.out",help="Provide the sufix for the concatenated zorro file (default is '%(default)s')")
 alternative.add_argument("-p","--partition-file", dest="partition_file", type=str, help="Using this option and providing the partition file will convert it between a RAxML or Nexus format")
 
 # Formatting options
@@ -84,7 +84,6 @@ def main_parser(alignment_list):
 		else:
 			outfile = "".join(alignment_list).split(".")[0]
 
-
 	# The input file at this stage is not necessary
 	# If just converting the partition file format do this and exit
 	if arg.partition_file != None:
@@ -100,10 +99,12 @@ def main_parser(alignment_list):
 
 	if len(alignment_list) == 1:
 
+		# In case only one alignment
 		alignment = Alignment.Alignment("".join(alignment_list))
 
 	else:
 
+		# With many alignments
 		alignments = Alignment.AlignmentList(alignment_list)
 
 		if arg.conversion != None:
@@ -114,12 +115,22 @@ def main_parser(alignment_list):
 
 			alignment = alignments.concatenate()
 
+			# If zorro weigth files are provided, concatenate them as well
+			if arg.zorro != None:
+				zorro = Data.Zorro(alignment_list, arg.zorro)
+
 	# Removing taxa
 	if arg.remove != None:
 
 		alignment.remove_taxa(arg.remove)
 
+
+	## Writing files
 	alignment.write_to_file (output_format, outfile)
+
+	# In case zorro weigth files are provide, write the concatenated file 
+	if arg.zorro != None:
+		zorro.write_to_file(outfile)
 
 	
 	# # Parsing input file(s)
