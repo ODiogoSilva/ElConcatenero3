@@ -46,7 +46,7 @@ alternative.add_argument("-p","--partition-file", dest="partition_file", type=st
 # Formatting options
 formatting = parser.add_argument_group("Formatting options")
 formatting.add_argument("-model",dest="model_phy",default="LG",choices=["DAYHOFF","DCMUT","JTT","MTREV","WAG","RTREV","CPREV","VT","BLOSUM62","MTMAM","LG"],help="This option only applies for the concatenation of protein data into phylip format. Specify the model for all partitions defined in the partition file (default is '%(default)s')")
-#formatting.add_argument("-interleave",dest="interleave",action="store_const",const="interleave",help="Specificy this option to write output files in interleave format (currently only supported for nexus files")
+formatting.add_argument("-interleave",dest="interleave",action="store_const",const="interleave",help="Specificy this option to write output files in interleave format (currently only supported for nexus files")
 formatting.add_argument("-g",dest="gap",default="-",help="Symbol for gap (default is '%(default)s')")
 formatting.add_argument("-m",dest="missing",default="n",help="Symbol for missing data (default is '%(default)s')")
 
@@ -69,8 +69,14 @@ def main_parser(alignment_list):
 	input_format = arg.input_format
 	output_format = arg.output_format
 	outfile = arg.outfile
-	#interleave = arg.interleave
+	interleave = arg.interleave
 	model_phy = arg.model_phy
+
+	# Setting leave/interleave format
+	if interleave == None:
+		sequence_format = "leave"
+	else:
+		sequence_format = "interleave"
 
 	# Defining output file name
 	if arg.conversion == None and arg.outfile != None:
@@ -105,7 +111,7 @@ def main_parser(alignment_list):
 		if arg.reverse != None:
 			partition = Data.Partitions(arg.reverse)
 			reverse_alignments = alignment.reverse_concatenate(partition)
-			reverse_alignments.write_to_file(output_format)
+			reverse_alignments.write_to_file(output_format,form=sequence_format)
 			return 0
 
 	else:
@@ -115,7 +121,7 @@ def main_parser(alignment_list):
 
 		if arg.conversion != None:
 
-			alignments.write_to_file(output_format)
+			alignments.write_to_file(output_format, form=sequence_format)
 			return 0
 
 		else:
@@ -133,7 +139,7 @@ def main_parser(alignment_list):
 
 
 	## Writing files
-	alignment.write_to_file (output_format, outfile)
+	alignment.write_to_file (output_format, outfile, form=sequence_format)
 
 	# In case zorro weigth files are provide, write the concatenated file 
 	if arg.zorro != None:
