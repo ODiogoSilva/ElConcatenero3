@@ -306,10 +306,10 @@ class Alignment (Base):
 				out_file.write("\tpartition part = %s: %s;\n\tset partition=part;\nend;\n" % (len(self.loci_ranges),", ".join([part[0] for part in self.loci_ranges])))
 
 				# Concatenates the substitution models of the individual partitions
-				if model_list != []:
+				if self.model:
 					loci_number = 1
 					out_file.write("begin mrbayes;\n")
-					for model in self.model_list:
+					for model in self.model:
 						m1 = model[0].split()
 						m2 = model[1].split()
 						m1_final = m1[0]+" applyto=("+str(loci_number)+") "+" ".join(m1[1:])
