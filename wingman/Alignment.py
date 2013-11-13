@@ -27,8 +27,10 @@ from collections import OrderedDict
 
 class Alignment (Base):
 
-	def __init__ (self, input_alignment,input_format=None,model_list=None, alignment_name=None):
-		""" The basic Alignment class requires only an alignment file and returns an Alignment object. In case the class is initialized with a dictionary object, the input_format, model_list and alignment_name arguments can be used to provide complementary information for the class. However, if the class is not initialized with specific values for these arguments, they can be latter set using the _set_format and _set_model functions """
+	def __init__ (self, input_alignment,input_format=None,model_list=None, alignment_name=None, loci_ranges=None):
+		""" The basic Alignment class requires only an alignment file and returns an Alignment object. In case the class is initialized with a dictionary object, the input_format, model_list, alignment_name and loci_ranges arguments can be used to provide complementary information for the class. However, if the class is not initialized with specific values for these arguments, they can be latter set using the _set_format and _set_model functions 
+
+			The loci_ranges argument is only relevant when an Alignment object is initialized from a concatenated data set, in which case it is relevant to incorporate this information in the object"""
 
 		# In case the class is initialized with an input file name
 		if type(input_alignment) is str:
@@ -48,10 +50,18 @@ class Alignment (Base):
 		# In case the class is initialized with a dictionay object
 		elif type(input_alignment) is OrderedDict:
 
-			self.input_alignment = alignment_name
-			self._init_dicObj(input_alignment)
-			self.input_format = input_format
-			self.model = model_list
+			self.input_alignment = alignment_name # The name of the alignment (str)
+			self._init_dicObj(input_alignment) # Gets several attributes from the dictionary alignment 
+			self.input_format = input_format # The input format of the alignment (str)
+			self.model = model_list # A list containing the alignment model(s) (list)
+			self.loci_ranges = loci_ranges # A list containing the ranges of the alignment, in case it's a concatenation
+
+			print (self.loci_ranges)
+
+	def _set_loci_ranges (self, loci_list):
+		""" Use this function to mannyally set the list with the loci ranges """
+
+		self.loci_ranges = loci_list
 
 	def _set_format (self, input_format):
 		""" Use this function to manually set the input format associated with the Alignment object """
@@ -220,8 +230,10 @@ class Alignment (Base):
 
 		return alignmentlist_obj
 
-	def write_to_file (self, output_format, output_file, new_alignment = None, seq_space_nex=40, seq_space_phy=30, seq_space_ima2=10, cut_space_nex=50, cut_space_phy=50, cut_space_ima2=8, conversion=None, form="leave", gap="-", missing="n", loci_range=[], model_phylip="LG", model_list=[]):
-		""" Writes the alignment object into a specified output file, automatically adding the extension, according to the output format """
+	def write_to_file (self, output_format, output_file, new_alignment = None, seq_space_nex=40, seq_space_phy=30, seq_space_ima2=10, cut_space_nex=50, cut_space_phy=50, cut_space_ima2=8, form="leave", gap="-", missing="n", model_phylip="LG", model_list=[]):
+		""" Writes the alignment object into a specified output file, automatically adding the extension, according to the output format 
+
+		This function supports the writting of both converted (no partitions) and concatenated (partitioned files). The choice of this modes is determined by the presence or absence of the loci_range attribute of the object. If its None, there are no partitions and no partitions files will be created. If there are partitions, then the appropriate partitions will be written """
 
 		# If this function is called in the AlignmentList class, there may be a need to specify a new alignment dictionary, such as a concatenated one
 		if new_alignment != None:
@@ -238,10 +250,12 @@ class Alignment (Base):
 					out_file.write("%s %s\n" % (key[:cut_space_phy].ljust(seq_space_phy),seq))
 
 			# In case there is a concatenated alignment being written
-			if conversion == None:
+			if self.loci_ranges:
 				partition_file = open(output_file+"_part.File","a")
-				for partition,lrange in loci_range:
+				for partition,lrange in self.loci_ranges:
 					partition_file.write("%s, %s = %s\n" % (model_phylip,partition,lrange))
+
+
 
 		# Writes file in nexus format
 		if "nexus" in output_format:
@@ -274,11 +288,11 @@ class Alignment (Base):
 				out_file.write(";\n\tend;")
 
 
-			if conversion == False:
+			if self.loci_ranges:
 				out_file.write("\nbegin mrbayes;\n")
-				for partition,lrange in loci_range:
+				for partition,lrange in self.loci_ranges:
 					out_file.write("\tcharset %s = %s;\n" % (partition,lrange))
-				out_file.write("\tpartition part = %s: %s;\n\tset partition=part;\nend;\n" % (len(loci_range),", ".join([part[0] for part in loci_range])))
+				out_file.write("\tpartition part = %s: %s;\n\tset partition=part;\nend;\n" % (len(self.loci_ranges),", ".join([part[0] for part in self.loci_ranges])))
 
 				# Concatenates the substitution models of the individual partitions
 				if model_list != []:
@@ -356,8 +370,8 @@ class AlignmentList (Alignment, Base):
 			# Algorithm that fills absent taxa with missing data
 			if self.loci_lengths == []:
 				self.concatenation = alignment_object.alignment # Create the main alignment dictionary from the first current alignment and never visit this statement again
-				self.loci_lengths.append(alignment_object.loci_lengths)
-				self.loci_range.append((alignment_object.input_alignment.split(".")[0],"1-%s" % (alignment_object.loci_lengths))) # Saving the range for the first loci
+				self.loci_lengths.append(alignment_object.locus_length)
+				self.loci_range.append((alignment_object.input_alignment.split(".")[0],"1-%s" % (alignment_object.locus_length))) # Saving the range for the first loci
 	
 			else:
 				for taxa, sequence in alignment_object.alignment.items(): 
@@ -367,16 +381,16 @@ class AlignmentList (Alignment, Base):
 						self.concatenation[taxa] = missing*sum(self.loci_lengths)+sequence # If the taxa does not yet exist in the main alignment, create the new entry with a sequence of 'n' characters of the same size as the length of the missed loci and the sequence from the current alignment
 
 				# Saving the range for the subsequent loci
-				self.loci_range.append((alignment_object.input_alignment.split(".")[0],"%s-%s" % (sum(self.loci_lengths)+1, sum(self.loci_lengths)+alignment_object.loci_lengths)))
-				self.loci_lengths.append(alignment_object.loci_lengths)
+				self.loci_range.append((alignment_object.input_alignment.split(".")[0],"%s-%s" % (sum(self.loci_lengths)+1, sum(self.loci_lengths)+alignment_object.locus_length)))
+				self.loci_lengths.append(alignment_object.locus_length)
 				
 				# Check if any taxa from the main alignment are missing from the current alignment. If yes, fill them with 'n'
 				for taxa in self.concatenation:
 					if taxa not in alignment_object.alignment: 
-						self.concatenation[taxa] += missing*alignment_object.loci_lengths
+						self.concatenation[taxa] += missing*alignment_object.locus_length
 
 
-		concatenated_alignment = Alignment(self.concatenation, input_format=self._get_format(),model_list=self.models)
+		concatenated_alignment = Alignment(self.concatenation, input_format=self._get_format(),model_list=self.models, loci_ranges=self.loci_range)
 		return concatenated_alignment
 
 	def iter_alignment_dic (self):
