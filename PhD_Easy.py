@@ -65,8 +65,8 @@ def main_parser(alignment_list):
 	""" Function with the main operations of ElConcatenero """
 	
 	# Defining main variables
-	gap = arg.gap
-	missing_sym = arg.missing
+	#gap = arg.gap
+	#missing_sym = arg.missing
 	conversion = arg.conversion
 	input_format = arg.input_format
 	output_format = arg.output_format
