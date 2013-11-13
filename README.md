@@ -1,12 +1,13 @@
 ## About ElConcatenero3
 
-ElConcatenero3 is a python program developed for the UNIX OS (but should work in any operating system with python 3.x) that converts and concatenates common population genetics and phylogenetics data file types (such as Fasta, Phylip and Nexus). The program works through command line exclusively, which makes it fast and scriptable, a usefull feature when dealing with lots of files simultaneously. It uses the ElParsito3.py module, which is where the file parsing and writting classes are.
+ElConcatenero3 is a python program developed for the UNIX OS (but should work in any operating system with python 3.x) that converts, concatenates and manipulates common population genetics and phylogenetics data file types (such as Fasta, Phylip and Nexus). For the moment, the program works through command line exclusively, which makes it fast and scriptable, but a GUI version is being worked on. It requires the wingman library.
 
 It currently supports as input file formats:
 
 - Fasta
 - Phylip
-- Nexus
+- Nexus (Alignment files and partition files)
+- RAxML partition files
 
 And its able to convert/concatenate any of these file formats into:
 
@@ -15,7 +16,7 @@ And its able to convert/concatenate any of these file formats into:
 - Nexus
 - ZORRO weigths files (these weigths files that are associated with their respective alignment files can be jointly concatenated)
 
-There is no need for instalation. The only requirement is that the ElParsito3.py module must be on the same directory as ElConcatenero3.py (or you can use any other way to let the main script know where the module is). I do recommend, to make it easier to call the program, that you add it to your $PATH variable. This can be done by declaring "export $PATH=$PATH:/path/to/ElConcatenero3" on your .bashrc, or your shell specific rc file.
+There is no need for instalation. The only requirement is that the wingman library must be on the same directory as ElConcatenero3.py (or you can use any other way to let the main script know where the module is). I do recommend, to make it easier to call the program, that you add it to your $PATH variable. This can be done by declaring "export $PATH=$PATH:/path/to/ElConcatenero3" on your .bashrc, or your shell specific rc file.
 
 Finally, please note that ElConcatero3.py is not immune to bugs, and I'll be happy to know about them through my e-mail (o.diogosilva@gmail.com) so that I can fix them. Any suggestions or comments are also welcome.
 
@@ -50,41 +51,33 @@ ElConcatenero3.py has the following options (which can also be consulted by typi
                         arguments with the -in option. This flag precludes the
                         usage of the -o option, as the output file name is
                         automatically generated based on the input file name**
-                        
-  -r REVERSE            **Reverse a concatenated file into its original single
+  -r *REVERSE*            **Reverse a concatenated file into its original single
                         locus alignments. A partition file similar to the one
                         read by RAxML must be provided**
-                        
-  -z                    **Use this option if you wish to concatenate auxiliary
-                        Zorro files associated with each alignment. Note that
-                        the auxiliary files must have the same prefix of the
-                        alignment file, with the addition of '_zorro.out'**
-                        
-  -zfile *[ZORRO_INFILE [ZORRO_INFILE ...]]*
-                        **Provide the sufix for the concatenated zorro file
-                        (default is '_zorro.out')**
-                        
-  -charset *CHARSET*     **Format the partition file of RAxML into a charset
-                        analogous to the Nexus block. A partition file similar
-                        to the one read by RAxML must be provided**
-                        
-  -partfile *PARTFILE*    **Format the charset analogous to the Nexus block into
-                        the partition file of RAxML**
+  -z ZORRO, --zorro-suffix *ZORRO*
+                        **Use this option if you wish to concatenate auxiliary
+                        Zorro files associated with each alignment. Provide
+                        the sufix for the concatenated zorro file**
+  -p PARTITION_FILE, --partition-file *PARTITION_FILE*
+                        **Using this option and providing the partition file
+                        will convert it between a RAxML or Nexus format**
+  --collapse            **Use this flag if you would like to collapse the input
+                        alignment(s) into unique haplotypes**
+
 
 ####Formatting options:
 
-  -model *{DAYHOFF,DCMUT,JTT,MTREV,WAG,RTREV,CPREV,VT,BLOSUM62,MTMAM,LG}*
+   -model *{DAYHOFF,DCMUT,JTT,MTREV,WAG,RTREV,CPREV,VT,BLOSUM62,MTMAM,LG}*
                         **This option only applies for the concatenation of
                         protein data into phylip format. Specify the model for
-                        all partitions defined in the partition file**
-                        
+                        all partitions defined in the partition file (default
+                        is 'LG')**
   -interleave           **Specificy this option to write output files in
                         interleave format (currently only supported for nexus
                         files**
-                        
-  -g GAP                *Symbol for gap (default is '-')*
-  
-  -m MISSING            *Symbol for missing data (default is 'n')*
+  -g *GAP*                **Symbol for gap (default is '-')**
+  -m *MISSING*            **Symbol for missing data (default is 'n')**
+
 
 ####Data manipultation:
 
@@ -93,20 +86,11 @@ ElConcatenero3.py has the following options (which can also be consulted by typi
                         Multiple taxa may be specified and separated by
                         whitespace**
                         
-  --pickle-taxa *{dump,load}*
-                        **Dump option: Only output a pickle object with the taxa
-                        names of the input alignment; Load option: loads the
-                        taxa names from a pickle object to be incorporated in
-                        the output alignment**
 
-####Additional data checks:
-
-  --check               **Provides a final check for the lengths of the
-                        alignment sequences**
 
 #####Note: The order of the options does not matter.
 		
-### Usage
+### Usage examples
 
 ##### Conversion (Fasta to Nexus)
 
@@ -143,6 +127,14 @@ ElConcatenero3.py -of phylip -in input_file1.fas input_file2.fas (...) input_fil
 or
 
 ElConcatenero3.py -of phylip -in *.fas -o concatenated_file
+
+#### Collapse alignment 
+
+ElConcatenero3.py -in *.fas -of fasta --collapse
+
+#### Remove taxa
+
+ElConcatenero3.py -in *.fas -of fasta -rm taxon1 taxon2 taxon3 (...) taxonN
 
 #### ToDo
 
