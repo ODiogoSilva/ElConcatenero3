@@ -49,8 +49,8 @@ alternative.add_argument("--collapse", dest="collapse",action="store_const",cons
 formatting = parser.add_argument_group("Formatting options")
 formatting.add_argument("-model",dest="model_phy",default="LG",choices=["DAYHOFF","DCMUT","JTT","MTREV","WAG","RTREV","CPREV","VT","BLOSUM62","MTMAM","LG"],help="This option only applies for the concatenation of protein data into phylip format. Specify the model for all partitions defined in the partition file (default is '%(default)s')")
 formatting.add_argument("-interleave",dest="interleave",action="store_const",const="interleave",help="Specificy this option to write output files in interleave format (currently only supported for nexus files")
-formatting.add_argument("-g",dest="gap",default="-",help="Symbol for gap (default is '%(default)s')")
-formatting.add_argument("-m",dest="missing",default="n",help="Symbol for missing data (default is '%(default)s')")
+#formatting.add_argument("-g",dest="gap",default="-",help="Symbol for gap (default is '%(default)s')")
+#formatting.add_argument("-m",dest="missing",default="n",help="Symbol for missing data (default is '%(default)s')")
 
 # Data manipulation
 manipulation = parser.add_argument_group("Data manipultation")
