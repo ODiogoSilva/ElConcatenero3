@@ -140,7 +140,8 @@ def main_parser(alignment_list):
 		alignment.remove_taxa(arg.remove)
 
 	# Collapsing the alignment
-	alignment.collapse(haplotypes_file=outfile)
+	if arg.collapse != False:
+		alignment.collapse(haplotypes_file=outfile)
 
 	## Writing files
 	alignment.write_to_file (output_format, outfile, form=sequence_format)
