@@ -95,7 +95,10 @@ ElConcatenero3.py has the following options (which can also be consulted by typi
                         Multiple taxa may be specified and separated by
                         whitespace**
                         
-
+  -outgroup *[OUTGROUP_TAXA [OUTGROUP_TAXA ...]]*
+                        **Provide taxon names/number for the outgroup (This
+                        option is only supported for NEXUS output format
+                        files)**
 
 #####Note: The order of the options does not matter.
 		
