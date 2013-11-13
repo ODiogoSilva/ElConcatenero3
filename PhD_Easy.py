@@ -43,7 +43,7 @@ alternative.add_argument("-c",dest="conversion",action="store_const",const=True,
 alternative.add_argument("-r",dest="reverse",help="Reverse a concatenated file into its original single locus alignments. A partition file similar to the one read by RAxML must be provided")
 alternative.add_argument("-z","--zorro-suffix",dest="zorro",type=str, help="Use this option if you wish to concatenate auxiliary Zorro files associated with each alignment. Provide the sufix for the concatenated zorro file")
 alternative.add_argument("-p","--partition-file", dest="partition_file", type=str, help="Using this option and providing the partition file will convert it between a RAxML or Nexus format")
-alternative.add_argument("--collapse", dest="collapse",action="store_const",const=True, default=False, help="Use this flag if you would like to collapse the input alignment(s) into unique haplotypes")
+alternative.add_argument("-collapse", dest="collapse",action="store_const",const=True, default=False, help="Use this flag if you would like to collapse the input alignment(s) into unique haplotypes")
 
 # Formatting options
 formatting = parser.add_argument_group("Formatting options")
@@ -55,6 +55,7 @@ formatting.add_argument("-interleave",dest="interleave",action="store_const",con
 # Data manipulation
 manipulation = parser.add_argument_group("Data manipultation")
 manipulation.add_argument("-rm",dest="remove",nargs="*",help="Removes the specified taxa from the final alignment. Multiple taxa may be specified and separated by whitespace")
+manipulation.add_argument("-outgroup", dest="outgroup_taxa", nargs="*", help="Provide taxon names/number for the outgroup (This option is only supported for NEXUS output format files)")
 #manipulation.add_argument("--pickle-taxa",dest="pickle", choices=["dump","load"],help="Dump option: Only output a pickle object with the taxa names of the input alignment; Load option: loads the taxa names from a pickle object to be incorporated in the output alignment")
 
 arg = parser.parse_args()
@@ -73,6 +74,7 @@ def main_parser(alignment_list):
 	outfile = arg.outfile
 	interleave = arg.interleave
 	model_phy = arg.model_phy
+	outgroup_taxa = arg.outgroup_taxa
 
 	# Setting leave/interleave format
 	if interleave == None:
@@ -113,7 +115,7 @@ def main_parser(alignment_list):
 		if arg.reverse != None:
 			partition = Data.Partitions(arg.reverse)
 			reverse_alignments = alignment.reverse_concatenate(partition)
-			reverse_alignments.write_to_file(output_format,form=sequence_format)
+			reverse_alignments.write_to_file(output_format,form=sequence_format, outgroup_list=outgroup_taxa)
 			return 0
 
 	else:
@@ -123,7 +125,7 @@ def main_parser(alignment_list):
 
 		if arg.conversion != None:
 
-			alignments.write_to_file(output_format, form=sequence_format)
+			alignments.write_to_file(output_format, form=sequence_format, outgroup_list=outgroup_taxa)
 			return 0
 
 		else:
@@ -144,7 +146,7 @@ def main_parser(alignment_list):
 		alignment.collapse(haplotypes_file=outfile)
 
 	## Writing files
-	alignment.write_to_file (output_format, outfile, form=sequence_format)
+	alignment.write_to_file (output_format, outfile, form=sequence_format, outgroup_list=outgroup_taxa)
 
 	# In case zorro weigth files are provide, write the concatenated file 
 	if arg.zorro != None:

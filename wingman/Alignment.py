@@ -228,10 +228,12 @@ class Alignment (Base):
 
 		return alignmentlist_obj
 
-	def write_to_file (self, output_format, output_file, new_alignment = None, seq_space_nex=40, seq_space_phy=30, seq_space_ima2=10, cut_space_nex=50, cut_space_phy=50, cut_space_ima2=8, form="leave", gap="-", missing="n", model_phylip="LG", model_list=[]):
+	def write_to_file (self, output_format, output_file, new_alignment = None, seq_space_nex=40, seq_space_phy=30, seq_space_ima2=10, cut_space_nex=50, cut_space_phy=50, cut_space_ima2=8, form="leave", gap="-", missing="n", model_phylip="LG", model_list=[], outgroup_list=None):
 		""" Writes the alignment object into a specified output file, automatically adding the extension, according to the output format 
 
-		This function supports the writting of both converted (no partitions) and concatenated (partitioned files). The choice of this modes is determined by the presence or absence of the loci_range attribute of the object. If its None, there are no partitions and no partitions files will be created. If there are partitions, then the appropriate partitions will be written """
+		This function supports the writting of both converted (no partitions) and concatenated (partitioned files). The choice of this modes is determined by the presence or absence of the loci_range attribute of the object. If its None, there are no partitions and no partitions files will be created. If there are partitions, then the appropriate partitions will be written.
+
+		The outgroup_list argument is used only for Nexus output format and consists in writing a line defining the outgroup. This may be usefull for analyses with MrBayes or other software that may require outgrups"""
 
 		# If this function is called in the AlignmentList class, there may be a need to specify a new alignment dictionary, such as a concatenated one
 		if new_alignment != None:
@@ -304,6 +306,13 @@ class Alignment (Base):
 				for partition,lrange in self.loci_ranges:
 					out_file.write("\tcharset %s = %s;\n" % (partition,lrange))
 				out_file.write("\tpartition part = %s: %s;\n\tset partition=part;\nend;\n" % (len(self.loci_ranges),", ".join([part[0] for part in self.loci_ranges])))
+
+			# In case outgroup taxa are specified
+			if outgroup_list != None:
+
+				compliant_outgroups = [taxon for taxon in outgroup_list if taxon in self.iter_sequences()] # This assures that only the outgroups present in the current file are written
+				if compliant_outgroups != []:
+					out_file.write("\nbegin mrbayes;\n\toutgroup %s\nend;\n" % (" ".join(compliant_outgroups)))
 
 				# Concatenates the substitution models of the individual partitions
 				if self.model:
