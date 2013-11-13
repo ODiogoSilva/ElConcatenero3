@@ -1,5 +1,7 @@
 ## About ElConcatenero3
 
+Note: Name under consideration
+
 ElConcatenero3 is a python program developed for the UNIX OS (but should work in any operating system with python 3.x) that converts, concatenates and manipulates common population genetics and phylogenetics data file types (such as Fasta, Phylip and Nexus). For the moment, the program works through command line exclusively, which makes it fast and scriptable, but a GUI version is being worked on. It requires the wingman library.
 
 It currently supports as input file formats:
