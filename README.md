@@ -56,7 +56,7 @@ ElConcatenero3.py has the following options (which can also be consulted by typi
 
   -r *REVERSE*            **Reverse a concatenated file into its original single
                         locus alignments. A partition file similar to the one
-                        read by RAxML must be provided**
+                        read by RAxML or a file containing a NEXUS charset block must be provided**
 
   -z ZORRO, --zorro-suffix *ZORRO*
                         **Use this option if you wish to concatenate auxiliary
@@ -84,7 +84,7 @@ ElConcatenero3.py has the following options (which can also be consulted by typi
                         files**
 
   -g *GAP*                **Symbol for gap (default is '-')**
-  
+
   -m *MISSING*            **Symbol for missing data (default is 'n')**
 
 
@@ -147,3 +147,4 @@ ElConcatenero3.py -in *.fas -of fasta -rm taxon1 taxon2 taxon3 (...) taxonN
 
 #### ToDo
 
+- Add outgroup specification for nexus format
