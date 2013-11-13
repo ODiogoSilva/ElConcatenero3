@@ -361,7 +361,7 @@ class AlignmentList (Alignment, Base):
 
 		return self.alignment_object_list[0].input_format
 
-	def concatenate (self, missing="n", progress_stat=True):
+	def concatenate (self, progress_stat=True):
 		""" The concatenate method will concatenate the multiple sequence alignments and create several attributes 
 
 		This method sets the first three variables below and the concatenation variable containing the dict object"""
@@ -375,6 +375,9 @@ class AlignmentList (Alignment, Base):
 			# When set to True, this statement produces a progress status on the terminal
 			if progress_stat == True: 
 				print ("\rConcatenating file %s out of %s" % (self.alignment_object_list.index(alignment_object)+1,len(self.alignment_object_list)),end="")
+
+			# Setting the missing data symbol
+			missing = alignment_object.sequence_code[1]
 
 			# If input format is nexus, save the substution model, if any
 			if alignment_object.input_format == "nexus" and alignment_object.model != []:
