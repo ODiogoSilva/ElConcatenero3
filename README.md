@@ -53,16 +53,20 @@ ElConcatenero3.py has the following options (which can also be consulted by typi
                         arguments with the -in option. This flag precludes the
                         usage of the -o option, as the output file name is
                         automatically generated based on the input file name**
+
   -r *REVERSE*            **Reverse a concatenated file into its original single
                         locus alignments. A partition file similar to the one
                         read by RAxML must be provided**
+
   -z ZORRO, --zorro-suffix *ZORRO*
                         **Use this option if you wish to concatenate auxiliary
                         Zorro files associated with each alignment. Provide
                         the sufix for the concatenated zorro file**
+
   -p PARTITION_FILE, --partition-file *PARTITION_FILE*
                         **Using this option and providing the partition file
                         will convert it between a RAxML or Nexus format**
+
   --collapse            **Use this flag if you would like to collapse the input
                         alignment(s) into unique haplotypes**
 
@@ -74,10 +78,13 @@ ElConcatenero3.py has the following options (which can also be consulted by typi
                         protein data into phylip format. Specify the model for
                         all partitions defined in the partition file (default
                         is 'LG')**
+
   -interleave           **Specificy this option to write output files in
                         interleave format (currently only supported for nexus
                         files**
+
   -g *GAP*                **Symbol for gap (default is '-')**
+  
   -m *MISSING*            **Symbol for missing data (default is 'n')**
 
 
