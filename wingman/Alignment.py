@@ -56,8 +56,6 @@ class Alignment (Base):
 			self.model = model_list # A list containing the alignment model(s) (list)
 			self.loci_ranges = loci_ranges # A list containing the ranges of the alignment, in case it's a concatenation
 
-			print (self.loci_ranges)
-
 	def _set_loci_ranges (self, loci_list):
 		""" Use this function to mannyally set the list with the loci ranges """
 
@@ -255,7 +253,20 @@ class Alignment (Base):
 				for partition,lrange in self.loci_ranges:
 					partition_file.write("%s, %s = %s\n" % (model_phylip,partition,lrange))
 
+			out_file.close()
 
+		if "mcmctree" in output_format:
+
+			out_file = open(output_file+".phy", "w")
+			taxa_number = len(self.alignment)
+
+			for element in self.loci_ranges:
+				partition_range = [int(x) for x in element[1].split("-")]
+				out_file.write("%s %s\n" % (taxa_number, (int(partition_range[1])-int(partition_range[0]))))
+				for taxon, sequence in self.alignment.items():
+					out_file.write("%s  %s\n" % (taxon[:cut_space_phy].ljust(seq_space_phy),sequence[(int(partition_range[0])-1):(int(partition_range[1])-1)]))
+
+			out_file.close()
 
 		# Writes file in nexus format
 		if "nexus" in output_format:
@@ -307,13 +318,15 @@ class Alignment (Base):
 						loci_number += 1
 					out_file.write("end;\n")
 
+			out_file.close()
+
 		# Writes file in fasta format
 		if "fasta" in output_format:
 			out_file = open(output_file+".fas","w")
 			for key,seq in self.alignment.items():
 				out_file.write(">%s\n%s\n" % (key,seq))				
 
-		out_file.close()
+			out_file.close()
 
 
 class AlignmentList (Alignment, Base):
