@@ -228,6 +228,52 @@ class Alignment (Base):
 
 		return alignmentlist_obj
 
+	def code_gaps (self):
+		""" This method codes gaps present in the alignment in binary format, according to the method of Simmons and Ochoterena (2000), to be read by phylogenetic programs such as MrBayes. The resultant alignment, however, can only be outputed in the Nexus format """
+
+		def gap_listing (sequence,gap_symbol="-"):
+		""" Function that parses a sequence string and returns the position of indel events. The returned list is composed of tuples with the span of each indel """
+		gap = "%s+" % (gap_symbol)
+		span_regex = ""
+		gap_list,seq_start = [],0
+		while span_regex != None:
+			span_regex = re.search(gap,sequence)
+			if span_regex != None and seq_start == 0:
+				gap_list.append(span_regex.span())
+				sequence = sequence[span_regex.span()[1]+1:]
+				seq_start = span_regex.span()[1]+1
+			elif span_regex != None and seq_start != 0:
+				gap_list.append((span_regex.span()[0]+seq_start,span_regex.span()[1]+seq_start))
+				sequence = sequence[span_regex.span()[1]+1:]
+				seq_start += span_regex.span()[1]+1
+		return gap_list
+
+		def gap_binary_generator (sequence,gap_list):
+		""" This function contains the algorithm to construct the binary state block for the indel events """
+		for cur_gap in gap_list:
+			cur_gap_start,cur_gap_end = cur_gap
+			if sequence[cur_gap_start:cur_gap_end] == "-"*(cur_gap_end - cur_gap_start) and sequence[cur_gap_start-1] != "-" and sequence[cur_gap_end] != "-":
+				sequence += "1"
+			elif sequence[cur_gap_start:cur_gap_end] == "-"*(cur_gap_end - cur_gap_start):
+				if sequence[cur_gap_start-1] == "-" or sequence[cur_gap_end] == "-":
+					sequence += "-"
+			elif sequence[cur_gap_start:cur_gap_end] != "-"*(cur_gap_end - cur_gap_start):
+				sequence += "0"
+		return sequence
+
+		complete_gap_list = []
+
+		# Get the complete list of unique gap positions in the alignment
+		for taxa, seq in self.alignment:
+
+			current_list = gap_listing (seq)
+			complete_gap_list += [gap for gap in current_list if gap not in complete_gap_list]
+
+		# This will add the binary matrix of the unique gaps listed at the end of each alignment sequence
+		for taxa, seq in self.alignment:
+			self.alignment[taxa] = gap_binary_generator (seq, complete_gap_list)
+
+
 	def write_to_file (self, output_format, output_file, new_alignment = None, seq_space_nex=40, seq_space_phy=30, seq_space_ima2=10, cut_space_nex=50, cut_space_phy=50, cut_space_ima2=8, form="leave", gap="-", missing="n", model_phylip="LG", model_list=[], outgroup_list=None):
 		""" Writes the alignment object into a specified output file, automatically adding the extension, according to the output format 
 
