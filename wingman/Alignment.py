@@ -294,7 +294,7 @@ class Alignment (Base):
 		try:
 			self.restriction_range
 			if output_format != ["nexus"]:
-				raise OutputFormatError("Alignments with gaps coded can only be written in Nexus format")
+				print ("OutputFormatError: Alignments with gaps coded can only be written in Nexus format")
 				return 0
 		except:
 			pass
