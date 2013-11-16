@@ -24,6 +24,7 @@
 from wingman.Base import Base
 from wingman.ErrorHandling import *
 from collections import OrderedDict
+import re
 
 class Alignment (Base):
 
@@ -232,45 +233,45 @@ class Alignment (Base):
 		""" This method codes gaps present in the alignment in binary format, according to the method of Simmons and Ochoterena (2000), to be read by phylogenetic programs such as MrBayes. The resultant alignment, however, can only be outputed in the Nexus format """
 
 		def gap_listing (sequence,gap_symbol="-"):
-		""" Function that parses a sequence string and returns the position of indel events. The returned list is composed of tuples with the span of each indel """
-		gap = "%s+" % (gap_symbol)
-		span_regex = ""
-		gap_list,seq_start = [],0
-		while span_regex != None:
-			span_regex = re.search(gap,sequence)
-			if span_regex != None and seq_start == 0:
-				gap_list.append(span_regex.span())
-				sequence = sequence[span_regex.span()[1]+1:]
-				seq_start = span_regex.span()[1]+1
-			elif span_regex != None and seq_start != 0:
-				gap_list.append((span_regex.span()[0]+seq_start,span_regex.span()[1]+seq_start))
-				sequence = sequence[span_regex.span()[1]+1:]
-				seq_start += span_regex.span()[1]+1
-		return gap_list
+			""" Function that parses a sequence string and returns the position of indel events. The returned list is composed of tuples with the span of each indel """
+			gap = "%s+" % (gap_symbol)
+			span_regex = ""
+			gap_list,seq_start = [],0
+			while span_regex != None:
+				span_regex = re.search(gap,sequence)
+				if span_regex != None and seq_start == 0:
+					gap_list.append(span_regex.span())
+					sequence = sequence[span_regex.span()[1]+1:]
+					seq_start = span_regex.span()[1]+1
+				elif span_regex != None and seq_start != 0:
+					gap_list.append((span_regex.span()[0]+seq_start,span_regex.span()[1]+seq_start))
+					sequence = sequence[span_regex.span()[1]+1:]
+					seq_start += span_regex.span()[1]+1
+			return gap_list
 
 		def gap_binary_generator (sequence,gap_list):
-		""" This function contains the algorithm to construct the binary state block for the indel events """
-		for cur_gap in gap_list:
-			cur_gap_start,cur_gap_end = cur_gap
-			if sequence[cur_gap_start:cur_gap_end] == "-"*(cur_gap_end - cur_gap_start) and sequence[cur_gap_start-1] != "-" and sequence[cur_gap_end] != "-":
-				sequence += "1"
-			elif sequence[cur_gap_start:cur_gap_end] == "-"*(cur_gap_end - cur_gap_start):
-				if sequence[cur_gap_start-1] == "-" or sequence[cur_gap_end] == "-":
-					sequence += "-"
-			elif sequence[cur_gap_start:cur_gap_end] != "-"*(cur_gap_end - cur_gap_start):
-				sequence += "0"
-		return sequence
+			""" This function contains the algorithm to construct the binary state block for the indel events """
+			for cur_gap in gap_list:
+				cur_gap_start,cur_gap_end = cur_gap
+				if sequence[cur_gap_start:cur_gap_end] == "-"*(cur_gap_end - cur_gap_start) and sequence[cur_gap_start-1] != "-" and sequence[cur_gap_end] != "-":
+					sequence += "1"
+				elif sequence[cur_gap_start:cur_gap_end] == "-"*(cur_gap_end - cur_gap_start):
+					if sequence[cur_gap_start-1] == "-" or sequence[cur_gap_end] == "-":
+						sequence += "-"
+				elif sequence[cur_gap_start:cur_gap_end] != "-"*(cur_gap_end - cur_gap_start):
+					sequence += "0"
+			return sequence
 
 		complete_gap_list = []
 
 		# Get the complete list of unique gap positions in the alignment
-		for taxa, seq in self.alignment:
+		for taxa, seq in self.alignment.items():
 
 			current_list = gap_listing (seq)
 			complete_gap_list += [gap for gap in current_list if gap not in complete_gap_list]
 
 		# This will add the binary matrix of the unique gaps listed at the end of each alignment sequence
-		for taxa, seq in self.alignment:
+		for taxa, seq in self.alignment.items():
 			self.alignment[taxa] = gap_binary_generator (seq, complete_gap_list)
 
 		self.restriction_range = "%s-%s" % (int(self.locus_length), len(complete_gap_list) + int(self.locus_length) - 1)
@@ -289,6 +290,15 @@ class Alignment (Base):
 		else:
 			alignment = self.alignment
 
+		# Checks if there is any other format besides Nexus if the alignment's gap have been coded
+		try:
+			self.restriction_range
+			if output_format != ["nexus"]:
+				raise OutputFormatError("Alignments with gaps coded can only be written in Nexus format")
+				return 0
+		except:
+			pass
+
 		# Writes file in phylip format
 		if "phylip" in output_format:
 
@@ -298,10 +308,12 @@ class Alignment (Base):
 					out_file.write("%s %s\n" % (key[:cut_space_phy].ljust(seq_space_phy),seq))
 
 			# In case there is a concatenated alignment being written
-			if self.loci_ranges:
+			try:
+				self.loci_ranges
 				partition_file = open(output_file+"_part.File","a")
 				for partition,lrange in self.loci_ranges:
 					partition_file.write("%s, %s = %s\n" % (model_phylip,partition,lrange))
+			except: pass
 
 			out_file.close()
 
@@ -325,9 +337,10 @@ class Alignment (Base):
 			
 			# This writes the output in interleave format
 			if form == "interleave":
-				if self.restriction_range:
+				try:
+					self.restriction_range
 					out_file.write("#NEXUS\n\nBegin data;\n\tdimensions ntax=%s nchar=%s ;\n\tformat datatype=mixed(%s:1-%s, restriction:%s) interleave=yes gap=%s missing=%s ;\n\tmatrix\n" % (len(alignment), self.locus_length, self.sequence_code[0], self.locus_length-1, self.restriction_range, gap, missing))
-				else:
+				except:
 					out_file.write("#NEXUS\n\nBegin data;\n\tdimensions ntax=%s nchar=%s ;\n\tformat datatype=%s interleave=yes gap=%s missing=%s ;\n\tmatrix\n" % (len(alignment), self.locus_length, self.sequence_code[0], gap, missing))
 				counter = 0
 				for i in range (90,self.locus_length,90):
@@ -343,23 +356,25 @@ class Alignment (Base):
 						out_file.write("\n")
 				out_file.write(";\n\tend;")
 				
-
 			# This writes the output in leave format (default)
 			else:
-				if self.restriction_range:
+				try:
+					self.restriction_range
 					out_file.write("#NEXUS\n\nBegin data;\n\tdimensions ntax=%s nchar=%s ;\n\tformat datatype=mixed(%s:1-%s, restriction:%s) interleave=yes gap=%s missing=%s ;\n\tmatrix\n" % (len(alignment), self.locus_length, self.sequence_code[0], self.locus_length-1, self.restriction_range, gap, missing))
-				else:
+				except:
 					out_file.write("#NEXUS\n\nBegin data;\n\tdimensions ntax=%s nchar=%s ;\n\tformat datatype=%s interleave=no gap=%s missing=%s ;\n\tmatrix\n" % (len(alignment), self.locus_length, self.sequence_code[0], gap, missing))
 				for key,seq in alignment.items():
 					out_file.write("%s %s\n" % (key[:cut_space_nex].ljust(seq_space_nex),seq))
 				out_file.write(";\n\tend;")
 
 
-			if self.loci_ranges:
+			try:
+				self.loci_ranges
 				out_file.write("\nbegin mrbayes;\n")
 				for partition,lrange in self.loci_ranges:
 					out_file.write("\tcharset %s = %s;\n" % (partition,lrange))
 				out_file.write("\tpartition part = %s: %s;\n\tset partition=part;\nend;\n" % (len(self.loci_ranges),", ".join([part[0] for part in self.loci_ranges])))
+			except:pass
 
 			# In case outgroup taxa are specified
 			if outgroup_list != None:
@@ -480,10 +495,10 @@ class AlignmentList (Alignment, Base):
 
 		return [alignment for alignment in self.alignment_object_list]
 
-	def write_to_file (self, output_format, form="leave"):
+	def write_to_file (self, output_format, form="leave",outgroup_list=[]):
 		""" This method writes a list of alignment objects or a concatenated alignment into a file """
 
 		for alignment_obj in self.alignment_object_list:
 			output_file_name = alignment_obj.input_alignment.split(".")[0]
-			alignment_obj.write_to_file(output_format, output_file=output_file_name, conversion=True, form=form)
+			alignment_obj.write_to_file(output_format, output_file=output_file_name, form=form, outgroup_list=outgroup_list)
 
