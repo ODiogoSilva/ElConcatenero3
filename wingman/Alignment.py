@@ -72,6 +72,11 @@ class Alignment (Base):
 
 		self.model = model_list
 
+	def _set_alignment (selfl, alignment_dict):
+		""" This function can be used to set a new alignment dictionary to the Alignment object. This may be usefull when only the alignment dict of the object has to be modified through other objects/functions """
+
+		self.alignment = alignment_dict
+
 	def _init_dicObj (self, dictionary_obj):
 		""" In case the class is initialized with a dictionary as input, this function will retrieve the same information as the read_alignment function would do  """
 
