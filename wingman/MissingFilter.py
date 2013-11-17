@@ -24,9 +24,26 @@
 class MissingFilter ():
 	""" Contains several methods used to trim and filter missing data from alignments. It's mainly used for inheritance """
 
-	def __init__ (self, alignment_dict):
+	def __init__ (self, alignment_dict, gap_symbol="-", missing_symbol="n"):
 
 		self.alignment = alignment_dict
+		self.gap = gap_symbol
+		self.missing = missing_symbol
 
 	def filter_terminals (self):
 		""" Given an alignment, this will replace the gaps in the extremities of the alignment with missing data """
+
+		for taxa,seq in self.alignment.items():
+
+			trim_seq = list(seq)
+			counter, reverse_counter = 0, -1
+
+			while trim_seq[counter] == self.gap:
+				trim_seq[counter] = self.missing
+
+			while trim_seq[reverse_counter] == self.gap:
+				trim_seq[reverse_counter] = self.missing
+
+			seq = "".join(trim_seq)
+
+			self.alignment[taxa] = seq
