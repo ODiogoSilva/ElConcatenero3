@@ -285,7 +285,11 @@ class Alignment (Base,MissingFilter):
 	def filter_missing_data (self, gap_threshold, missing_threshold):
 		""" Wraps the MissingFilter class """
 
+		# When the class is initialized, it performs the basid filtering operations based on the provided thresholds
 		alignment_filter = MissingFilter(self.alignment, gap_threshold=gap_threshold, missing_threshold=missing_threshold, gap_symbol="-", missing_symbol=sequence_code[1])
+
+		# Replace the old alignment by the filtered one
+		self.alignments = alignment_filter.alignment
 
 
 	def write_to_file (self, output_format, output_file, new_alignment = None, seq_space_nex=40, seq_space_phy=30, seq_space_ima2=10, cut_space_nex=50, cut_space_phy=50, cut_space_ima2=8, form="leave", gap="-", model_phylip="LG", model_list=[], outgroup_list=None):
@@ -505,6 +509,13 @@ class AlignmentList (Alignment, Base, MissingFilter):
 	def iter_alignment_obj (self):
 
 		return [alignment for alignment in self.alignment_object_list]
+
+	def filter_missing_data (self):
+		""" Wrapper of the MissingFilter class that iterates over multiple Alignment objects """
+
+		for alignment_obj in self.alignment_object_list:
+
+			alignment_obj.filter_missing_data()
 
 	def write_to_file (self, output_format, form="leave",outgroup_list=[]):
 		""" This method writes a list of alignment objects or a concatenated alignment into a file """
