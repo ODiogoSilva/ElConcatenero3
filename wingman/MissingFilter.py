@@ -24,17 +24,20 @@
 class MissingFilter ():
 	""" Contains several methods used to trim and filter missing data from alignments. It's mainly used for inheritance """
 
-	def __init__ (self, alignment_object, gap_threshold=50, missing_threshold=75, gap_symbol="-", missing_symbol="n"):
+	def __init__ (self, alignment_dict, gap_threshold=50, missing_threshold=75, gap_symbol="-", missing_symbol="n"):
 		""" the gap_threshold variable is a cut-off to total_missing_proportion and missing_threshold in a cut-off to missing_proportion """
 
-		self.alignment_obj = alignment_object
-		self.alignment = alignment_object.alignment
+		self.alignment = alignment_dict
 		self.gap = gap_symbol
 		self.missing = missing_symbol
 
 		# Definig thresholds
 		self.gap_threshold = gap_threshold
 		self.missing_threshold = missing_threshold
+
+		# Basic filter
+		self.filter_terminals()
+		self.filter_columns()
 
 	def filter_terminals (self):
 		""" Given an alignment, this will replace the gaps in the extremities of the alignment with missing data """
@@ -70,9 +73,10 @@ class MissingFilter ():
 			return 0
 
 		taxa_number = len(self.alignment)
+		locus_length = len(list(self.alignment.values())[0])
 
 		# Creating the column list variable
-		for column_position in range(self.alignment_obj.locus_length-1, -1, -1): # The reverse iteration over the sequences is necessary to maintain the column numbers when removing them
+		for column_position in range(locus_length-1, -1, -1): # The reverse iteration over the sequences is necessary to maintain the column numbers when removing them
 
 			column = [char[column_position] for char in self.alignment]
 
@@ -88,3 +92,4 @@ class MissingFilter ():
 			elif missing_proportion > float(self.missing_threshold):
 
 				delete_column (column_position)
+
