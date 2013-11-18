@@ -83,9 +83,9 @@ class Base ():
 		DNA_count = sequence.count("A") + sequence.count("T") + sequence.count("G") + sequence.count("C") + sequence.count("N")
 		DNA_proportion = float(DNA_count)/float(len(sequence))
 		if DNA_proportion > 0.9: # The 0.9 cut-off has been effective so far
-			code = ("DNA","N")
+			code = ("DNA","n")
 		else:
-			code = ("Protein","X")
+			code = ("Protein","x")
 		return code	
 
 	def rm_illegal (self,string):
