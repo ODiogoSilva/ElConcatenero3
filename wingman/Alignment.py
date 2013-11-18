@@ -286,7 +286,7 @@ class Alignment (Base,MissingFilter):
 		""" Wraps the MissingFilter class """
 
 		# When the class is initialized, it performs the basid filtering operations based on the provided thresholds
-		alignment_filter = MissingFilter(self.alignment, gap_threshold=gap_threshold, missing_threshold=missing_threshold, gap_symbol="-", missing_symbol=sequence_code[1])
+		alignment_filter = MissingFilter(self.alignment, gap_threshold=gap_threshold, missing_threshold=missing_threshold, gap_symbol="-", missing_symbol=self.sequence_code[1])
 
 		# Replace the old alignment by the filtered one
 		self.alignments = alignment_filter.alignment
@@ -354,7 +354,7 @@ class Alignment (Base,MissingFilter):
 			if form == "interleave":
 				try:
 					self.restriction_range
-					out_file.write("#NEXUS\n\nBegin data;\n\tdimensions ntax=%s nchar=%s ;\n\tformat datatype=mixed(%s:1-%s, restriction:%s) interleave=yes gap=%s missing=%s ;\n\tmatrix\n" % (len(alignment), self.locus_length, self.sequence_code[0], self.locus_length-1, self.restriction_range, gap, sequence_code[1]))
+					out_file.write("#NEXUS\n\nBegin data;\n\tdimensions ntax=%s nchar=%s ;\n\tformat datatype=mixed(%s:1-%s, restriction:%s) interleave=yes gap=%s missing=%s ;\n\tmatrix\n" % (len(alignment), self.locus_length, self.sequence_code[0], self.locus_length-1, self.restriction_range, gap, self.sequence_code[1]))
 				except:
 					out_file.write("#NEXUS\n\nBegin data;\n\tdimensions ntax=%s nchar=%s ;\n\tformat datatype=%s interleave=yes gap=%s missing=%s ;\n\tmatrix\n" % (len(alignment), self.locus_length, self.sequence_code[0], gap, sequence_code[1]))
 				counter = 0
@@ -375,9 +375,9 @@ class Alignment (Base,MissingFilter):
 			else:
 				try:
 					self.restriction_range
-					out_file.write("#NEXUS\n\nBegin data;\n\tdimensions ntax=%s nchar=%s ;\n\tformat datatype=mixed(%s:1-%s, restriction:%s) interleave=yes gap=%s missing=%s ;\n\tmatrix\n" % (len(alignment), self.locus_length, self.sequence_code[0], self.locus_length-1, self.restriction_range, gap, sequence_code[1]))
+					out_file.write("#NEXUS\n\nBegin data;\n\tdimensions ntax=%s nchar=%s ;\n\tformat datatype=mixed(%s:1-%s, restriction:%s) interleave=yes gap=%s missing=%s ;\n\tmatrix\n" % (len(alignment), self.locus_length, self.sequence_code[0], self.locus_length-1, self.restriction_range, gap, self.sequence_code[1]))
 				except:
-					out_file.write("#NEXUS\n\nBegin data;\n\tdimensions ntax=%s nchar=%s ;\n\tformat datatype=%s interleave=no gap=%s missing=%s ;\n\tmatrix\n" % (len(alignment), self.locus_length, self.sequence_code[0], gap, sequence_code[1]))
+					out_file.write("#NEXUS\n\nBegin data;\n\tdimensions ntax=%s nchar=%s ;\n\tformat datatype=%s interleave=no gap=%s missing=%s ;\n\tmatrix\n" % (len(alignment), self.locus_length, self.sequence_code[0], gap, self.sequence_code[1]))
 				for key,seq in alignment.items():
 					out_file.write("%s %s\n" % (key[:cut_space_nex].ljust(seq_space_nex),seq))
 				out_file.write(";\n\tend;")
