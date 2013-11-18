@@ -78,7 +78,7 @@ class MissingFilter ():
 		# Creating the column list variable
 		for column_position in range(locus_length-1, -1, -1): # The reverse iteration over the sequences is necessary to maintain the column numbers when removing them
 
-			column = [char[column_position] for char in self.alignment]
+			column = [char[column_position] for char in self.alignment.values()]
 
 			# Calculating metrics
 			gap_proportion = (float(column.count(self.gap))/float(taxa_number))*float(100)
