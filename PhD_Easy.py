@@ -45,6 +45,7 @@ alternative.add_argument("-z","--zorro-suffix",dest="zorro",type=str, help="Use 
 alternative.add_argument("-p","--partition-file", dest="partition_file", type=str, help="Using this option and providing the partition file will convert it between a RAxML or Nexus format")
 alternative.add_argument("-collapse", dest="collapse",action="store_const",const=True, default=False, help="Use this flag if you would like to collapse the input alignment(s) into unique haplotypes")
 alternative.add_argument("-gcoder",dest="gcoder", action="store_const", const=True, default=False, help="Use this flag to code the gaps of the alignment into a binary state matrix that is appended to the end of the alignment")
+alternative.add_argument("-filter", dest="filter", nargs=2, type=list, help="Use this option if you wish to filter the alignment's missing data. Along with this option provide the threshold percentages for gap and missing data, respectively (e.g. -filter 50 75 - filters alignments columns with more than 50%% of gap+missing data and columns with more than 75%% of true missing data)")
 
 # Formatting options
 formatting = parser.add_argument_group("Formatting options")
@@ -126,6 +127,11 @@ def main_parser(alignment_list):
 
 		if arg.conversion != None:
 
+			# In case multiple files are to be converted and an alignment filter is to be carried out
+			if arg.filter != None:
+
+				alignments.filter_missing_data()
+
 			alignments.write_to_file(output_format, form=sequence_format, outgroup_list=outgroup_taxa)
 			return 0
 
@@ -151,6 +157,9 @@ def main_parser(alignment_list):
 		if output_format != ["nexus"]:
 			raise OutputFormatError("Alignments with gaps coded can only be written in Nexus format")
 		alignment.code_gaps()
+
+	if arg.filter != None:
+		alignment.filter_missing_data()
 
 	## Writing files
 	alignment.write_to_file (output_format, outfile, form=sequence_format, outgroup_list=outgroup_taxa)
