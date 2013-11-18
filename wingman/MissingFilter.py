@@ -49,9 +49,11 @@ class MissingFilter ():
 
 			while trim_seq[counter] == self.gap:
 				trim_seq[counter] = self.missing
+				counter += 1
 
 			while trim_seq[reverse_counter] == self.gap:
 				trim_seq[reverse_counter] = self.missing
+				reverse_counter -= 1
 
 			seq = "".join(trim_seq)
 
@@ -60,25 +62,15 @@ class MissingFilter ():
 	def filter_columns (self):
 		""" Here several missing data metrics are calculated, and based on some user defined thresholds, columns with inappropriate missing data are removed """
 
-		def delete_column (column_position):
-			""" Converts alignment strings into lists and removes the ith column from the alignment """ 
-
-			for taxa,seq in self.alignment.items():
-
-				new_seq = list(seq)
-				del(new_seq[column_position])
-
-				self.alignment[taxa] = "".join(new_seq)
-
-			return 0
-
 		taxa_number = len(self.alignment)
 		locus_length = len(list(self.alignment.values())[0])
+
+		filtered_alignment = dict((taxa, list(seq)) for taxa, seq in self.alignment.items())
 
 		# Creating the column list variable
 		for column_position in range(locus_length-1, -1, -1): # The reverse iteration over the sequences is necessary to maintain the column numbers when removing them
 
-			column = [char[column_position] for char in self.alignment.values()]
+			column = [char[column_position] for char in filtered_alignment.values()]
 
 			# Calculating metrics
 			gap_proportion = (float(column.count(self.gap))/float(taxa_number))*float(100)
@@ -87,9 +79,9 @@ class MissingFilter ():
 
 			if total_missing_proportion > float(self.gap_threshold):
 
-				delete_column (column_position)
+				map ((lambda seq: seq.pop(column_position)), filtered_alignment.values())
 
 			elif missing_proportion > float(self.missing_threshold):
 
-				delete_column (column_position)
+				map ((lambda seq: seq.pop(column_position)), filtered_alignment.values())
 
