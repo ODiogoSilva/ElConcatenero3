@@ -59,7 +59,7 @@ class MissingFilter ():
 
 			self.alignment[taxa] = seq
 
-	def filter_columns (self):
+	def filter_columns (self,verbose=False):
 		""" Here several missing data metrics are calculated, and based on some user defined thresholds, columns with inappropriate missing data are removed """
 
 		taxa_number = len(self.alignment)
@@ -69,6 +69,9 @@ class MissingFilter ():
 
 		# Creating the column list variable
 		for column_position in range(locus_length-1, -1, -1): # The reverse iteration over the sequences is necessary to maintain the column numbers when removing them
+
+			if verbose == True:
+				print ("\rFiltering alignment column %s out of %s" % (column_position+1, locus_length+1), end="")
 
 			column = [char[column_position] for char in filtered_alignment.values()]
 
