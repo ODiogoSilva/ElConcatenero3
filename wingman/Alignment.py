@@ -417,7 +417,7 @@ class Alignment (Base,MissingFilter):
 		if "fasta" in output_format:
 			out_file = open(output_file+".fas","w")
 			for key,seq in self.alignment.items():
-				out_file.write(">%s\n%s\n" % (key,seq))				
+				out_file.write(">%s\n%s\n" % (key,seq.upper()))				
 
 			out_file.close()
 
