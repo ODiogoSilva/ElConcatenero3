@@ -89,11 +89,6 @@ def main_parser(alignment_list):
 		outfile = "".join(arg.outfile)
 	elif arg.conversion != None and arg.outfile != None:
 		outfile = "".join(arg.outfile)
-	elif arg.conversion != None and arg.outfile == None:
-		if input_format in output_format:
-			outfile = "".join(alignment_list).split(".")[0]+"_conv"
-		else:
-			outfile = "".join(alignment_list).split(".")[0]
 
 	# The input file at this stage is not necessary
 	# If just converting the partition file format do this and exit
@@ -113,6 +108,10 @@ def main_parser(alignment_list):
 		# In case only one alignment
 		alignment = Alignment.Alignment("".join(alignment_list))
 
+		# Check if input format is the same as output format. If so, and no output file name has been provided, update the default output file name
+		if alignment.input_format in output_format:
+			outfile = "".join(alignment_list).split(".")[0]+"_conv"
+
 		# If only to reverse a concatenated alignment into individual loci do this and exit
 		if arg.reverse != None:
 			partition = Data.Partitions(arg.reverse)
@@ -130,7 +129,7 @@ def main_parser(alignment_list):
 			# In case multiple files are to be converted and an alignment filter is to be carried out
 			if arg.filter != None:
 
-				alignments.filter_missing_data(arg.filter[0], arg.filter[1])
+				alignments.filter_missing_data(arg.filter[0], arg.filter[1], verbose=True)
 
 			alignments.write_to_file(output_format, form=sequence_format, outgroup_list=outgroup_taxa)
 			return 0
