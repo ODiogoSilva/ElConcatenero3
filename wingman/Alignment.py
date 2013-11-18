@@ -510,17 +510,24 @@ class AlignmentList (Alignment, Base, MissingFilter):
 
 		return [alignment for alignment in self.alignment_object_list]
 
-	def filter_missing_data (self):
+	def filter_missing_data (self, gap_threshold, missing_threshold, verbose=False):
 		""" Wrapper of the MissingFilter class that iterates over multiple Alignment objects """
 
 		for alignment_obj in self.alignment_object_list:
 
-			alignment_obj.filter_missing_data()
+			if verbose == True:
+
+				print ("\rFiltering file %s out of %s" % (self.alignment_object_list.index(alignment_obj)+1,len(self.alignment_object_list)),end="")
+
+			alignment_obj.filter_missing_data(gap_threshold=gap_threshold, missing_threshold=missing_threshold)
 
 	def write_to_file (self, output_format, form="leave",outgroup_list=[]):
 		""" This method writes a list of alignment objects or a concatenated alignment into a file """
 
 		for alignment_obj in self.alignment_object_list:
-			output_file_name = alignment_obj.input_alignment.split(".")[0]
+			if alignment_obj.input_format in output_format:
+				output_file_name = alignment_obj.input_alignment.split(".")[0]+"_conv"
+			else:
+				output_file_name = alignment_obj.input_alignment.split(".")[0]
 			alignment_obj.write_to_file(output_format, output_file=output_file_name, form=form, outgroup_list=outgroup_list)
 
