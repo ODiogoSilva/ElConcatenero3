@@ -106,7 +106,7 @@ class Alignment (Base,MissingFilter):
 				if line != "":
 					taxa = line.split()[0].replace(" ","")
 					taxa = self.rm_illegal(taxa)
-					sequence = line.split()[1].strip()
+					sequence = line.split()[1].strip().lower()
 					self.alignment[taxa] = sequence
 					
 					## TO DO: Read phylip interleave
@@ -119,7 +119,7 @@ class Alignment (Base,MissingFilter):
 					taxa = self.rm_illegal(taxa)
 					self.alignment[taxa] = ""
 				elif line.strip() != "":
-					self.alignment[taxa] += line.strip()
+					self.alignment[taxa] += line.strip().lower()
 			self.locus_length = len(list(self.alignment.values())[0])
 			
 		# PARSING NEXUS FORMAT
@@ -134,9 +134,9 @@ class Alignment (Base,MissingFilter):
 					taxa = line.strip().split()[0].replace(" ","")
 					taxa = self.rm_illegal(taxa)
 					if taxa in self.alignment: # This accomodates for the interleave format
-						self.alignment[taxa] += "".join(line.strip().split()[1:])
+						self.alignment[taxa] += "".join(line.strip().split()[1:]).lower()
 					else:
-						self.alignment[taxa] = "".join(line.strip().split()[1:])
+						self.alignment[taxa] = "".join(line.strip().split()[1:]).lower()
 						
 				# This bit of code will extract a potential substitution model from the file
 				elif counter == 2 and line.lower().strip().startswith("lset"):
@@ -282,8 +282,13 @@ class Alignment (Base,MissingFilter):
 
 		self.restriction_range = "%s-%s" % (int(self.locus_length), len(complete_gap_list) + int(self.locus_length) - 1)
 
+	def filter_missing_data (self, gap_threshold, missing_threshold):
+		""" Wraps the MissingFilter class """
 
-	def write_to_file (self, output_format, output_file, new_alignment = None, seq_space_nex=40, seq_space_phy=30, seq_space_ima2=10, cut_space_nex=50, cut_space_phy=50, cut_space_ima2=8, form="leave", gap="-", missing="n", model_phylip="LG", model_list=[], outgroup_list=None):
+		alignment_filter = MissingFilter(self.alignment, gap_threshold=gap_threshold, missing_threshold=missing_threshold, gap_symbol="-", missing_symbol=sequence_code[1])
+
+
+	def write_to_file (self, output_format, output_file, new_alignment = None, seq_space_nex=40, seq_space_phy=30, seq_space_ima2=10, cut_space_nex=50, cut_space_phy=50, cut_space_ima2=8, form="leave", gap="-", model_phylip="LG", model_list=[], outgroup_list=None):
 		""" Writes the alignment object into a specified output file, automatically adding the extension, according to the output format 
 
 		This function supports the writting of both converted (no partitions) and concatenated (partitioned files). The choice of this modes is determined by the presence or absence of the loci_range attribute of the object. If its None, there are no partitions and no partitions files will be created. If there are partitions, then the appropriate partitions will be written.
@@ -345,9 +350,9 @@ class Alignment (Base,MissingFilter):
 			if form == "interleave":
 				try:
 					self.restriction_range
-					out_file.write("#NEXUS\n\nBegin data;\n\tdimensions ntax=%s nchar=%s ;\n\tformat datatype=mixed(%s:1-%s, restriction:%s) interleave=yes gap=%s missing=%s ;\n\tmatrix\n" % (len(alignment), self.locus_length, self.sequence_code[0], self.locus_length-1, self.restriction_range, gap, missing))
+					out_file.write("#NEXUS\n\nBegin data;\n\tdimensions ntax=%s nchar=%s ;\n\tformat datatype=mixed(%s:1-%s, restriction:%s) interleave=yes gap=%s missing=%s ;\n\tmatrix\n" % (len(alignment), self.locus_length, self.sequence_code[0], self.locus_length-1, self.restriction_range, gap, sequence_code[1]))
 				except:
-					out_file.write("#NEXUS\n\nBegin data;\n\tdimensions ntax=%s nchar=%s ;\n\tformat datatype=%s interleave=yes gap=%s missing=%s ;\n\tmatrix\n" % (len(alignment), self.locus_length, self.sequence_code[0], gap, missing))
+					out_file.write("#NEXUS\n\nBegin data;\n\tdimensions ntax=%s nchar=%s ;\n\tformat datatype=%s interleave=yes gap=%s missing=%s ;\n\tmatrix\n" % (len(alignment), self.locus_length, self.sequence_code[0], gap, sequence_code[1]))
 				counter = 0
 				for i in range (90,self.locus_length,90):
 					for key, seq in alignment.items():
@@ -366,9 +371,9 @@ class Alignment (Base,MissingFilter):
 			else:
 				try:
 					self.restriction_range
-					out_file.write("#NEXUS\n\nBegin data;\n\tdimensions ntax=%s nchar=%s ;\n\tformat datatype=mixed(%s:1-%s, restriction:%s) interleave=yes gap=%s missing=%s ;\n\tmatrix\n" % (len(alignment), self.locus_length, self.sequence_code[0], self.locus_length-1, self.restriction_range, gap, missing))
+					out_file.write("#NEXUS\n\nBegin data;\n\tdimensions ntax=%s nchar=%s ;\n\tformat datatype=mixed(%s:1-%s, restriction:%s) interleave=yes gap=%s missing=%s ;\n\tmatrix\n" % (len(alignment), self.locus_length, self.sequence_code[0], self.locus_length-1, self.restriction_range, gap, sequence_code[1]))
 				except:
-					out_file.write("#NEXUS\n\nBegin data;\n\tdimensions ntax=%s nchar=%s ;\n\tformat datatype=%s interleave=no gap=%s missing=%s ;\n\tmatrix\n" % (len(alignment), self.locus_length, self.sequence_code[0], gap, missing))
+					out_file.write("#NEXUS\n\nBegin data;\n\tdimensions ntax=%s nchar=%s ;\n\tformat datatype=%s interleave=no gap=%s missing=%s ;\n\tmatrix\n" % (len(alignment), self.locus_length, self.sequence_code[0], gap, sequence_code[1]))
 				for key,seq in alignment.items():
 					out_file.write("%s %s\n" % (key[:cut_space_nex].ljust(seq_space_nex),seq))
 				out_file.write(";\n\tend;")
