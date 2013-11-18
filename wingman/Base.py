@@ -92,8 +92,7 @@ class Base ():
 		""" Function that removes illegal characters from taxa names """
 		illegal_chars = [":",",",")","(",";","[","]","'", '"'] # Additional illegal characters are added here 
 		clean_name = "".join([char for char in string if char not in illegal_chars])
-		if string != clean_name:
-			print ("\nWARNING: Removed illegal characters from the taxa %s" % string)
+
 		return clean_name
 
 	def duplicate_taxa (self, taxa_list):
