@@ -320,7 +320,7 @@ class Alignment (Base,MissingFilter):
 			out_file = open(output_file+".phy","w")
 			out_file.write("%s %s\n" % (len(alignment), self.locus_length))
 			for key, seq in alignment.items():
-					out_file.write("%s %s\n" % (key[:cut_space_phy].ljust(seq_space_phy),seq))
+					out_file.write("%s %s\n" % (key[:cut_space_phy].ljust(seq_space_phy),seq.upper()))
 
 			# In case there is a concatenated alignment being written
 			try:
@@ -340,8 +340,8 @@ class Alignment (Base,MissingFilter):
 			for element in self.loci_ranges:
 				partition_range = [int(x) for x in element[1].split("-")]
 				out_file.write("%s %s\n" % (taxa_number, (int(partition_range[1])-int(partition_range[0]))))
-				for taxon, sequence in self.alignment.items():
-					out_file.write("%s  %s\n" % (taxon[:cut_space_phy].ljust(seq_space_phy),sequence[(int(partition_range[0])-1):(int(partition_range[1])-1)]))
+				for taxon, seq in self.alignment.items():
+					out_file.write("%s  %s\n" % (taxon[:cut_space_phy].ljust(seq_space_phy),seq[(int(partition_range[0])-1):(int(partition_range[1])-1)].upper()))
 
 			out_file.close()
 
@@ -360,13 +360,13 @@ class Alignment (Base,MissingFilter):
 				counter = 0
 				for i in range (90,self.locus_length,90):
 					for key, seq in alignment.items():
-						out_file.write("%s %s\n" % (key[:cut_space_nex].ljust(seq_space_nex),seq[counter:i]))
+						out_file.write("%s %s\n" % (key[:cut_space_nex].ljust(seq_space_nex),seq[counter:i].upper()))
 					else:
 						out_file.write("\n")
 						counter = i				
 				else:
 					for key, seq in alignment.items():
-						out_file.write("%s %s\n" % (key[:cut_space_nex].ljust(seq_space_nex),seq[i:self.locus_length]))
+						out_file.write("%s %s\n" % (key[:cut_space_nex].ljust(seq_space_nex),seq[i:self.locus_length].upper()))
 					else:
 						out_file.write("\n")
 				out_file.write(";\n\tend;")
