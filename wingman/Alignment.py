@@ -22,11 +22,12 @@
 #  
 
 from wingman.Base import Base
+from wingman.MissingFilter import MissingFilter
 from wingman.ErrorHandling import *
 from collections import OrderedDict
 import re
 
-class Alignment (Base):
+class Alignment (Base,MissingFilter):
 
 	def __init__ (self, input_alignment,input_format=None,model_list=None, alignment_name=None, loci_ranges=None):
 		""" The basic Alignment class requires only an alignment file and returns an Alignment object. In case the class is initialized with a dictionary object, the input_format, model_list, alignment_name and loci_ranges arguments can be used to provide complementary information for the class. However, if the class is not initialized with specific values for these arguments, they can be latter set using the _set_format and _set_model functions 
@@ -412,7 +413,7 @@ class Alignment (Base):
 			out_file.close()
 
 
-class AlignmentList (Alignment, Base):
+class AlignmentList (Alignment, Base, MissingFilter):
 	""" At the most basic instance, this class contains a list of Alignment objects upon which several methods can be applied. It only requires either a list of alignment files or .
 
 		It inherits methods from Base and Alignment classes for the write_to_file methods """
