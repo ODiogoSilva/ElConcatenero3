@@ -89,6 +89,8 @@ def main_parser(alignment_list):
 		outfile = "".join(arg.outfile)
 	elif arg.conversion != None and arg.outfile != None:
 		outfile = "".join(arg.outfile)
+	elif arg.conversion != None and arg.outfile == None:
+		outfile = "".join(alignment_list).split(".")[0]
 
 	# The input file at this stage is not necessary
 	# If just converting the partition file format do this and exit
