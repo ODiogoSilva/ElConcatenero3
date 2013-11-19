@@ -59,6 +59,9 @@ manipulation = parser.add_argument_group("Data manipultation")
 manipulation.add_argument("-rm",dest="remove",nargs="*",help="Removes the specified taxa from the final alignment. Multiple taxa may be specified and separated by whitespace")
 manipulation.add_argument("-outgroup", dest="outgroup_taxa", nargs="*", help="Provide taxon names/number for the outgroup (This option is only supported for NEXUS output format files)")
 
+miscellaneous = parser.add_argument_group("Miscellaneous")
+miscellaneous.add_argument("-quiet", dest="quiet", action="store_const", const=True,default=False, help="Removes all terminal output")
+
 arg = parser.parse_args()
 
 ##### MAIN FUNCTIONS ######
@@ -110,7 +113,7 @@ def main_parser(alignment_list):
 		alignment = Alignment.Alignment("".join(alignment_list))
 
 		# Check if input format is the same as output format. If so, and no output file name has been provided, update the default output file name
-		if alignment.input_format in output_format:
+		if alignment.input_format in output_format and output_format == None:
 			outfile = "".join(alignment_list).split(".")[0]+"_conv"
 
 		# If only to reverse a concatenated alignment into individual loci do this and exit
@@ -145,17 +148,17 @@ def main_parser(alignment_list):
 
 	# Removing taxa
 	if arg.remove != None:
-		print ("\rRemoving taxa", end="")
+		if arg.quiet is False: print ("\rRemoving taxa", end="")
 		alignment.remove_taxa(arg.remove)
 
 	# Collapsing the alignment
 	if arg.collapse != False:
-		print ("\rCollapsing alignment", end="")
+		if arg.quiet is False: print ("\rCollapsing alignment", end="")
 		alignment.collapse(haplotypes_file=outfile)
 
 	# Codes gaps into binary states
 	if arg.gcoder != False:
-		print ("\rCoding gaps", end="")
+		if arg.quiet is False: print ("\rCoding gaps", end="")
 		if output_format != ["nexus"]:
 			raise OutputFormatError("Alignments with gaps coded can only be written in Nexus format")
 		alignment.code_gaps()
@@ -164,11 +167,11 @@ def main_parser(alignment_list):
 		alignment.filter_missing_data(arg.filter[0], arg.filter[1])
 
 	## Writing files
+	if arg.quiet is False: print ("\rWritting output file(s)",end="")
 	alignment.write_to_file (output_format, outfile, form=sequence_format, outgroup_list=outgroup_taxa)
 
 	# In case zorro weigth files are provide, write the concatenated file 
 	if arg.zorro != None:
-		print (arg.zorro)
 		zorro.write_to_file(outfile)
 
 		
@@ -195,7 +198,8 @@ def main():
 	main_check()
 	main_parser(arg.infile)
 
-	print ("\rProgram done!", end="")
+	if arg.quiet is False: 
+		print ("\rProgram done!", end="")
 
 ##### EXECUTION ######
 
