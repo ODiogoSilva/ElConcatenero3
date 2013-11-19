@@ -73,10 +73,13 @@ class Alignment (Base,MissingFilter):
 
 		self.model = model_list
 
-	def _set_alignment (selfl, alignment_dict):
+	def _set_alignment (self, alignment_dict):
 		""" This function can be used to set a new alignment dictionary to the Alignment object. This may be usefull when only the alignment dict of the object has to be modified through other objects/functions """
 
 		self.alignment = alignment_dict
+
+	def _set_locus_length (self, locus_length):
+		""" Manually sets the length of the locus in the Alignment locus """
 
 	def _init_dicObj (self, dictionary_obj):
 		""" In case the class is initialized with a dictionary as input, this function will retrieve the same information as the read_alignment function would do  """
@@ -289,8 +292,8 @@ class Alignment (Base,MissingFilter):
 		alignment_filter = MissingFilter(self.alignment, gap_threshold=gap_threshold, missing_threshold=missing_threshold, gap_symbol="-", missing_symbol=self.sequence_code[1])
 
 		# Replace the old alignment by the filtered one
-		self.alignments = alignment_filter.alignment
-
+		self.alignment = alignment_filter.alignment
+		self.locus_length = alignment_filter.locus_length
 
 	def write_to_file (self, output_format, output_file, new_alignment = None, seq_space_nex=40, seq_space_phy=30, seq_space_ima2=10, cut_space_nex=50, cut_space_phy=50, cut_space_ima2=8, form="leave", gap="-", model_phylip="LG", model_list=[], outgroup_list=None):
 		""" Writes the alignment object into a specified output file, automatically adding the extension, according to the output format 
