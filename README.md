@@ -1,8 +1,8 @@
-## About ElConcatenero3
+## About PhD_Easy
 
 Note: Name under consideration
 
-ElConcatenero3 is a python program developed for the UNIX OS (but should work in any operating system with python 3.x) that converts, concatenates and manipulates common population genetics and phylogenetics data file types (such as Fasta, Phylip and Nexus). For the moment, the program works through command line exclusively, which makes it fast and scriptable, but a GUI version is being worked on. It requires the wingman library.
+PhD_Easy is a python program developed for the UNIX OS (but should work in any operating system with python 3.x) that converts, concatenates and manipulates common population genetics and phylogenetics data file types (such as Fasta, Phylip and Nexus). For the moment, the program works through command line exclusively, which makes it fast and scriptable, but a GUI version is being worked on. It requires the wingman library.
 
 It currently supports as input file formats:
 
@@ -18,7 +18,7 @@ And its able to convert/concatenate any of these file formats into:
 - Nexus
 - ZORRO weigths files (these weigths files that are associated with their respective alignment files can be jointly concatenated)
 
-Recently, ElConcatenero3 has received several new features:
+Recently, PhD_Easy has received several new features:
 
 - Collapse alignments into unique haplotypes. Taxa in the output alignment will be Haplotypes and their correspondance to the original taxa will be provided in a secondary file with the '.haplotypes' extension
 - Code gaps into a binary state matrix that is appended at the end of the alignment, following the method of Simmons and Ochoterena (2000). This will only work when the output format is Nexus, and it can be red by MrBayes
@@ -29,7 +29,7 @@ Other minor improvements include:
 - Specific taxa can be removed from the output alignments when converting/concatenating files
 - In the Nexus output format, the outgroup may be set when converting/cocatenating 
 
-There is no need for instalation. The only requirement is that the wingman library must be on the same directory as PhD_Easy.py (or you can use any other way to let the main script know where the module is). I do recommend, to make it easier to call the program, that you add it to your $PATH variable. This can be done by declaring "export $PATH=$PATH:/path/to/ElConcatenero3" on your .bashrc, or your shell specific rc file.
+There is no need for instalation. The only requirement is that the wingman library must be on the same directory as PhD_Easy.py (or you can use any other way to let the main script know where the module is). I do recommend, to make it easier to call the program, that you add it to your $PATH variable. This can be done by declaring "export $PATH=$PATH:/path/to/PhD\_Easy" on your .bashrc, or your shell specific rc file.
 
 Finally, please note that ElConcatero3.py is not immune to bugs, and I'll be happy to know about them through my e-mail (o.diogosilva@gmail.com) so that I can fix them. Any suggestions or comments are also welcome.
 
