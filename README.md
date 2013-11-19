@@ -18,13 +18,24 @@ And its able to convert/concatenate any of these file formats into:
 - Nexus
 - ZORRO weigths files (these weigths files that are associated with their respective alignment files can be jointly concatenated)
 
-There is no need for instalation. The only requirement is that the wingman library must be on the same directory as ElConcatenero3.py (or you can use any other way to let the main script know where the module is). I do recommend, to make it easier to call the program, that you add it to your $PATH variable. This can be done by declaring "export $PATH=$PATH:/path/to/ElConcatenero3" on your .bashrc, or your shell specific rc file.
+Recently, ElConcatenero3 has received several new features:
+
+- Collapse alignments into unique haplotypes. Taxa in the output alignment will be Haplotypes and their correspondance to the original taxa will be provided in a secondary file with the '.haplotypes' extension
+- Code gaps into a binary state matrix that is appended at the end of the alignment, following the method of Simmons and Ochoterena (2000). This will only work when the output format is Nexus, and it can be red by MrBayes
+- Columns of the alignment with excessive missing data can be filtered according to two user-specified thresholds (a threshold for the maximum proportion of gap and missing data, and another for missing data only).
+
+Other minor improvements include:
+
+- Specific taxa can be removed from the output alignments when converting/concatenating files
+- In the Nexus output format, the outgroup may be set when converting/cocatenating 
+
+There is no need for instalation. The only requirement is that the wingman library must be on the same directory as PhD_Easy.py (or you can use any other way to let the main script know where the module is). I do recommend, to make it easier to call the program, that you add it to your $PATH variable. This can be done by declaring "export $PATH=$PATH:/path/to/ElConcatenero3" on your .bashrc, or your shell specific rc file.
 
 Finally, please note that ElConcatero3.py is not immune to bugs, and I'll be happy to know about them through my e-mail (o.diogosilva@gmail.com) so that I can fix them. Any suggestions or comments are also welcome.
 
 ### Options
 
-ElConcatenero3.py has the following options (which can also be consulted by typing "ElConcatenero3.py -h" or "ElConcatenero3.py --help in the command line):
+PhD_Easy.py has the following options (which can also be consulted by typing "PhD_Easy.py -h" or "PhD_Easy.py --help in the command line):
 
 ####optional arguments:
 
@@ -67,8 +78,21 @@ ElConcatenero3.py has the following options (which can also be consulted by typi
                         **Using this option and providing the partition file
                         will convert it between a RAxML or Nexus format**
 
-  --collapse            **Use this flag if you would like to collapse the input
+  -collapse            **Use this flag if you would like to collapse the input
                         alignment(s) into unique haplotypes**
+
+  -gcoder               **Use this flag to code the gaps of the alignment into a
+                        binary state matrix that is appended to the end of the
+                        alignment**
+
+  -filter *FILTER FILTER*
+                        **Use this option if you wish to filter the alignment's
+                        missing data. Along with this option provide the
+                        threshold percentages for gap and missing data,
+                        respectively (e.g. -filter 50 75 - filters alignments
+                        columns with more than 50% of gap+missing data and
+                        columns with more than 75% of true missing data)**
+
 
 
 ####Formatting options:
@@ -98,7 +122,7 @@ ElConcatenero3.py has the following options (which can also be consulted by typi
   -outgroup *[OUTGROUP_TAXA [OUTGROUP_TAXA ...]]*
                         **Provide taxon names/number for the outgroup (This
                         option is only supported for NEXUS output format
-                        files)**
+                        files)**xxxxxxxx
 
 #####Note: The order of the options does not matter.
 		
@@ -106,23 +130,23 @@ ElConcatenero3.py has the following options (which can also be consulted by typi
 
 ##### Conversion (Fasta to Nexus)
 
-ElConcatenero3.py -c -of nexus -in input_file.fas
+PhD_Easy.py -c -of nexus -in input_file.fas
 
 ##### Conversion (Phylip to Fasta)
 
-ElConcatenero3.py -c -of nexus -in input_file.phy
+PhD_Easy.py -c -of nexus -in input_file.phy
 
 ##### Conversion (Nexus to Phylip and fasta)
 
-ElConcatenero3.py -c -of phylip fasta -in input_file.nex
+PhD_Easy.py -c -of phylip fasta -in input_file.nex
 
 ##### Conversion (Multiple Fasta files to Nexus)
 
-ElConcatenero3.py -c -of nexus -in input_file1.fas input_file2.fas input_file3.fas input_file4.fas [...] input_fileN.fas
+PhD_Easy.py -c -of nexus -in input_file1.fas input_file2.fas input_file3.fas input_file4.fas [...] input_fileN.fas
 
 or
 
-ElConcatenero3.py -c -of nexus -in *.fas
+PhD_Easy.py -c -of nexus -in *.fas
 
 ##### Concatenation (Nexus to Nexus)
 
@@ -134,19 +158,27 @@ ElConcetenero.py -of nexus -in *.nex -o concatenated_file
 
 ##### Concatenation (Fasta to Phylip)
 
-ElConcatenero3.py -of phylip -in input_file1.fas input_file2.fas (...) input_fileN.fas -o concatenated_file
+PhD_Easy.py -of phylip -in input_file1.fas input_file2.fas (...) input_fileN.fas -o concatenated_file
 
 or
 
-ElConcatenero3.py -of phylip -in *.fas -o concatenated_file
+PhD_Easy.py -of phylip -in *.fas -o concatenated_file
 
 #### Collapse alignment 
 
-ElConcatenero3.py -in *.fas -of fasta --collapse
+PhD_Easy.py -in *.fas -of fasta -collapse -o Collapsed_alignment
+
+#### Coding gaps
+
+PhD_Easy.py -in *.fas -of nexus -gcoder -c 
+
+#### Filtering missing data
+
+PhD_Easy.py -in *.fas -of fasta nexus phylip -filter 50 75
 
 #### Remove taxa
 
-ElConcatenero3.py -in *.fas -of fasta -rm taxon1 taxon2 taxon3 (...) taxonN
+PhD_Easy.py -in *.fas -of fasta -rm taxon1 taxon2 taxon3 (...) taxonN
 
 #### ToDo
 
