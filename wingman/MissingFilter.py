@@ -63,15 +63,15 @@ class MissingFilter ():
 		""" Here several missing data metrics are calculated, and based on some user defined thresholds, columns with inappropriate missing data are removed """
 
 		taxa_number = len(self.alignment)
-		locus_length = len(list(self.alignment.values())[0])
+		self.old_locus_length = len(list(self.alignment.values())[0])
 
 		filtered_alignment = dict((taxa, list(seq)) for taxa, seq in self.alignment.items())
 
 		# Creating the column list variable
-		for column_position in range(locus_length-1, -1, -1): # The reverse iteration over the sequences is necessary to maintain the column numbers when removing them
+		for column_position in range(self.old_locus_length-1, -1, -1): # The reverse iteration over the sequences is necessary to maintain the column numbers when removing them
 
 			if verbose == True:
-				print ("\rFiltering alignment column %s out of %s" % (column_position+1, locus_length+1), end="")
+				print ("\rFiltering alignment column %s out of %s" % (column_position+1, self.old_locus_length+1), end="")
 
 			column = [char[column_position] for char in filtered_alignment.values()]
 
@@ -82,9 +82,12 @@ class MissingFilter ():
 
 			if total_missing_proportion > float(self.gap_threshold):
 
-				map ((lambda seq: seq.pop(column_position)), filtered_alignment.values())
+				list(map ((lambda seq: seq.pop(column_position)), filtered_alignment.values()))
 
 			elif missing_proportion > float(self.missing_threshold):
 
-				map ((lambda seq: seq.pop(column_position)), filtered_alignment.values())
+				list(map ((lambda seq: seq.pop(column_position)), filtered_alignment.values()))
+
+		self.alignment = dict((taxa, "".join(seq)) for taxa,seq in filtered_alignment.items())
+		self.locus_length = len(list(self.alignment.values())[0])
 
