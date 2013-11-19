@@ -124,6 +124,10 @@ PhD_Easy.py has the following options (which can also be consulted by typing "Ph
                         option is only supported for NEXUS output format
                         files)**xxxxxxxx
 
+####Miscellaneous:
+
+  -quiet                Removes all terminal output
+
 #####Note: The order of the options does not matter.
 		
 ### Usage examples
@@ -164,19 +168,19 @@ or
 
 PhD_Easy.py -of phylip -in *.fas -o concatenated_file
 
-#### Collapse alignment 
+#####Collapse alignment 
 
 PhD_Easy.py -in *.fas -of fasta -collapse -o Collapsed_alignment
 
-#### Coding gaps
+##### Coding gaps
 
 PhD_Easy.py -in *.fas -of nexus -gcoder -c 
 
-#### Filtering missing data
+##### Filtering missing data
 
 PhD_Easy.py -in *.fas -of fasta nexus phylip -filter 50 75
 
-#### Remove taxa
+##### Remove taxa
 
 PhD_Easy.py -in *.fas -of fasta -rm taxon1 taxon2 taxon3 (...) taxonN
 
