@@ -58,7 +58,6 @@ formatting.add_argument("-interleave",dest="interleave",action="store_const",con
 manipulation = parser.add_argument_group("Data manipultation")
 manipulation.add_argument("-rm",dest="remove",nargs="*",help="Removes the specified taxa from the final alignment. Multiple taxa may be specified and separated by whitespace")
 manipulation.add_argument("-outgroup", dest="outgroup_taxa", nargs="*", help="Provide taxon names/number for the outgroup (This option is only supported for NEXUS output format files)")
-#manipulation.add_argument("--pickle-taxa",dest="pickle", choices=["dump","load"],help="Dump option: Only output a pickle object with the taxa names of the input alignment; Load option: loads the taxa names from a pickle object to be incorporated in the output alignment")
 
 arg = parser.parse_args()
 
