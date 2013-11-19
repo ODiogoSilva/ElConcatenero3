@@ -146,15 +146,17 @@ def main_parser(alignment_list):
 
 	# Removing taxa
 	if arg.remove != None:
-
+		print ("\rRemoving taxa", end="")
 		alignment.remove_taxa(arg.remove)
 
 	# Collapsing the alignment
 	if arg.collapse != False:
+		print ("\rCollapsing alignment", end="")
 		alignment.collapse(haplotypes_file=outfile)
 
 	# Codes gaps into binary states
 	if arg.gcoder != False:
+		print ("\rCoding gaps", end="")
 		if output_format != ["nexus"]:
 			raise OutputFormatError("Alignments with gaps coded can only be written in Nexus format")
 		alignment.code_gaps()
@@ -193,6 +195,8 @@ def main_check ():
 def main():
 	main_check()
 	main_parser(arg.infile)
+
+	print ("\rProgram done!", end="")
 
 ##### EXECUTION ######
 
