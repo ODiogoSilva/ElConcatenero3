@@ -31,11 +31,11 @@ Other minor improvements include:
 
 There is no need for instalation. The only requirement is that the wingman library must be on the same directory as PhD_Easy.py (or you can use any other way to let the main script know where the module is). I do recommend, to make it easier to call the program, that you add it to your $PATH variable. This can be done by declaring "export $PATH=$PATH:/path/to/PhD\_Easy" on your .bashrc, or your shell specific rc file.
 
-Finally, please note that ElConcatero3.py is not immune to bugs, and I'll be happy to know about them through my e-mail (o.diogosilva@gmail.com) so that I can fix them. Any suggestions or comments are also welcome.
+Finally, please note that PhD\_Easy.py is not immune to bugs, and I'll be happy to know about them through my e-mail (o.diogosilva@gmail.com) so that I can fix them. Any suggestions or comments are also welcome.
 
 ### Options
 
-PhD_Easy.py has the following options (which can also be consulted by typing "PhD_Easy.py -h" or "PhD_Easy.py --help in the command line):
+PhD_Easy.py has the following options (which can also be consulted by typing "PhD_Easy.py -h" or "PhD_Easy.py --help" in the command line):
 
 ####optional arguments:
 
