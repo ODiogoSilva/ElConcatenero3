@@ -317,6 +317,8 @@ class Alignment (Base,MissingFilter):
 		except:
 			pass
 
+		print ("\rWritting output file(s)",end="")
+
 		# Writes file in phylip format
 		if "phylip" in output_format:
 
