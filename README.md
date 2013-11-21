@@ -186,4 +186,3 @@ PhD_Easy.py -in *.fas -of fasta -rm taxon1 taxon2 taxon3 (...) taxonN
 
 #### ToDo
 
-- Add outgroup specification for nexus format
