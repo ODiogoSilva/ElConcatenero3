@@ -1,8 +1,8 @@
 #!/usr/bin/python3
 
-# ElConcatenero v3.1.6
+# ElConcatenero v4.0.0.2
 # Author: Diogo N Silva
-# Last update: 10/08/2013
+# Last update: 03/12/2013
 # ElConcatenero is tool to convert and concatenate several commonly used data format types. Currently, supported input formats include Nexus, FastA and Phylip. Output may be in Nexus, Phylip (wiht part file for RaXML) or FastA. Please type "ElConcatenero -h" or read the README.md file for information on usage.
 
 #  Copyright 2012 Diogo N Silva <diogo@arch>
@@ -56,7 +56,7 @@ formatting.add_argument("-interleave",dest="interleave",action="store_const",con
 
 # Data manipulation
 manipulation = parser.add_argument_group("Data manipultation")
-manipulation.add_argument("-rm",dest="remove",nargs="*",help="Removes the specified taxa from the final alignment. Multiple taxa may be specified and separated by whitespace")
+manipulation.add_argument("-rm",dest="remove",nargs="*",help="Removes the specified taxa from the final alignment. Unwanted taxa my be provided in a csv file containing 1 column with a species name in each line or they may be specified in the command line and separated by whitespace")
 manipulation.add_argument("-outgroup", dest="outgroup_taxa", nargs="*", help="Provide taxon names/number for the outgroup (This option is only supported for NEXUS output format files)")
 
 miscellaneous = parser.add_argument_group("Miscellaneous")
@@ -134,6 +134,13 @@ def main_parser(alignment_list):
 			if arg.filter != None:
 
 				alignments.filter_missing_data(arg.filter[0], arg.filter[1], verbose=True)
+
+			# In case taxa are to be removed while converting
+			if arg.remove != None:
+				if arg.quiet is False:
+					alignments.remove_taxa(arg.remove, verbose=True)
+				else:
+					alignments.remove_taxa(arg.remove)
 
 			alignments.write_to_file(output_format, form=sequence_format, outgroup_list=outgroup_taxa)
 			return 0
