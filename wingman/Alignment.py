@@ -173,16 +173,33 @@ class Alignment (Base,MissingFilter):
 
 		return sequences
 
-	def remove_taxa (self, taxa_list):
-		""" Removes specified taxa from the alignment. taxa_list must be a list """
+	def remove_taxa (self, taxa_list_file):
+		""" Removes specified taxa from the alignment. As taxa_list, this method supports a python list or an input csv file with a single column containing the unwanted species in separate lines """
 
-		new_alignment = OrderedDict()
+		def remove (taxa_list):
 
-		for taxa,seq in self.alignment.items():
-			if taxa not in taxa_list:
-				new_alignment[taxa] = seq
+			new_alignment = OrderedDict()
 
-		self.alignment = new_alignment
+			for taxa,seq in self.alignment.items():
+				if taxa not in taxa_list:
+					new_alignment[taxa] = seq
+
+			self.alignment = new_alignment
+
+		# Checking if taxa_list is an input csv file:
+		try:
+			file_handle = open(taxa_list_file[0])
+
+			taxa_list = []
+
+			for line in file_handle:
+				taxa_list.append(line.strip())
+		# If not, then the method's argument is already the final list
+		except:
+			taxa_list = taxa_list_file
+
+		remove (taxa_list)
+
 
 	def collapse (self, write_haplotypes=True, haplotypes_file=None):
 		""" Collapses equal sequences into haplotypes. This method changes the alignment variable and only returns a dictionary with the correspondance between the haplotypes and the original taxa names  """
@@ -523,6 +540,17 @@ class AlignmentList (Alignment, Base, MissingFilter):
 				print ("\rFiltering file %s out of %s" % (self.alignment_object_list.index(alignment_obj)+1,len(self.alignment_object_list)),end="")
 
 			alignment_obj.filter_missing_data(gap_threshold=gap_threshold, missing_threshold=missing_threshold)
+
+	def remove_taxa (self, taxa_list, verbose=False):
+		""" Wrapper of the remove_taxa method of the Alignment object for multiple alignemnts """
+
+		for alignment_obj in self.alignment_object_list:
+
+			if verbose == True:
+
+				print ("\rRemoving taxa", end="")
+
+			alignment_obj.remove_taxa(taxa_list)
 
 	def write_to_file (self, output_format, form="leave",outgroup_list=[]):
 		""" This method writes a list of alignment objects or a concatenated alignment into a file """
