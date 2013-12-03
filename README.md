@@ -115,9 +115,7 @@ PhD_Easy.py has the following options (which can also be consulted by typing "Ph
 ####Data manipultation:
 
   -rm *[REMOVE [REMOVE ...]]*
-                        **Removes the specified taxa from the final alignment.
-                        Multiple taxa may be specified and separated by
-                        whitespace**
+                        **Removes the specified taxa from the final alignment. Unwanted taxa my be provided in a csv file containing 1 column with a species name in each line or they may be specified in the command line and separated by whitespace**
                         
   -outgroup *[OUTGROUP_TAXA [OUTGROUP_TAXA ...]]*
                         **Provide taxon names/number for the outgroup (This
