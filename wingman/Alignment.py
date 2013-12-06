@@ -357,11 +357,17 @@ class Alignment (Base,MissingFilter):
 			out_file = open(output_file+".phy", "w")
 			taxa_number = len(self.alignment)
 
-			for element in self.loci_ranges:
-				partition_range = [int(x) for x in element[1].split("-")]
-				out_file.write("%s %s\n" % (taxa_number, (int(partition_range[1])-int(partition_range[0]))))
+			try:
+				self.loci_ranges
+				for element in self.loci_ranges:
+					partition_range = [int(x) for x in element[1].split("-")]
+					out_file.write("%s %s\n" % (taxa_number, (int(partition_range[1])-int(partition_range[0]))))
+					for taxon, seq in self.alignment.items():
+						out_file.write("%s  %s\n" % (taxon[:cut_space_phy].ljust(seq_space_phy),seq[(int(partition_range[0])-1):(int(partition_range[1])-1)].upper()))
+			except:
+				out_file.write("%s %s\n" % (taxa_number,self.locus_length))
 				for taxon, seq in self.alignment.items():
-					out_file.write("%s  %s\n" % (taxon[:cut_space_phy].ljust(seq_space_phy),seq[(int(partition_range[0])-1):(int(partition_range[1])-1)].upper()))
+					out_file.write("%s  %s\n" % (taxon[:cut_space_phy].ljust(seq_space_phy), seq.upper()))
 
 			out_file.close()
 
