@@ -122,7 +122,7 @@ class Alignment (Base,MissingFilter):
 					taxa = self.rm_illegal(taxa)
 					self.alignment[taxa] = ""
 				elif line.strip() != "":
-					self.alignment[taxa] += line.strip().lower()
+					self.alignment[taxa] += line.strip().lower().replace(" ","")
 			self.locus_length = len(list(self.alignment.values())[0])
 			
 		# PARSING NEXUS FORMAT
