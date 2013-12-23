@@ -21,7 +21,7 @@
 #  
 #  
 
-from wingman.Base import Base
+from wingman.Base import *
 from wingman.MissingFilter import MissingFilter
 from wingman.ErrorHandling import *
 from collections import OrderedDict
@@ -33,6 +33,8 @@ class Alignment (Base,MissingFilter):
 		""" The basic Alignment class requires only an alignment file and returns an Alignment object. In case the class is initialized with a dictionary object, the input_format, model_list, alignment_name and loci_ranges arguments can be used to provide complementary information for the class. However, if the class is not initialized with specific values for these arguments, they can be latter set using the _set_format and _set_model functions 
 
 			The loci_ranges argument is only relevant when an Alignment object is initialized from a concatenated data set, in which case it is relevant to incorporate this information in the object"""
+
+		self.log_progression = Progression()
 
 		# In case the class is initialized with an input file name
 		if type(input_alignment) is str:
@@ -156,7 +158,7 @@ class Alignment (Base,MissingFilter):
 		# Checks for duplicate taxa
 		if len(list(self.alignment)) != len(set(list(self.alignment))):
 			taxa = self.duplicate_taxa(taxa_order)
-			print ("WARNING: Duplicated taxa have been found in file %s (%s). Please correct this problem and re-run the program\n" %(input_alignment,", ".join(taxa)))
+			self.log_progression("WARNING: Duplicated taxa have been found in file %s (%s). Please correct this problem and re-run the program\n" %(input_alignment,", ".join(taxa)))
 			raise SystemExit
 		
 	def iter_taxa (self):
@@ -329,7 +331,7 @@ class Alignment (Base,MissingFilter):
 		try:
 			self.restriction_range
 			if output_format != ["nexus"]:
-				print ("OutputFormatError: Alignments with gaps coded can only be written in Nexus format")
+				self.log_progression.write("OutputFormatError: Alignments with gaps coded can only be written in Nexus format")
 				return 0
 		except:
 			pass
@@ -455,14 +457,17 @@ class AlignmentList (Alignment, Base, MissingFilter):
 
 	def __init__ (self, alignment_list, model_list=None, name_list=None, verbose=True):
 
+		self.log_progression = Progression()
+
 		self.alignment_object_list = []
 
 		if type(alignment_list[0]) is str:
 
+			self.log_progression.record("Parsing file", len(alignment_list))
 			for alignment in alignment_list:
 
 				if verbose == True:
-					print ("\rParsing file %s out of %s" % (alignment_list.index(alignment), len(alignment_list)), end="")
+					self.log_progression.progress_bar(alignment_list.index(alignment)+1)
 
 				alignment_object = Alignment(alignment)
 				self.alignment_object_list.append(alignment_object)
@@ -488,12 +493,14 @@ class AlignmentList (Alignment, Base, MissingFilter):
 		self.loci_lengths = [] # Saves the sequence lengths of the 
 		self.loci_range = [] # Saves the loci names as keys and their range as values
 		self.models = [] # Saves the substitution models for each one
+
+		self.log_progression.record("Concatenating file",len(self.alignment_object_list))
 		
 		for alignment_object in self.alignment_object_list:
 			
 			# When set to True, this statement produces a progress status on the terminal
 			if progress_stat == True: 
-				print ("\rConcatenating file %s out of %s" % (self.alignment_object_list.index(alignment_object)+1,len(self.alignment_object_list)),end="")
+				self.log_progression.progress_bar(self.alignment_object_list.index(alignment_object)+1)
 
 			# Setting the missing data symbol
 			missing = alignment_object.sequence_code[1]
@@ -536,14 +543,14 @@ class AlignmentList (Alignment, Base, MissingFilter):
 
 		return [alignment for alignment in self.alignment_object_list]
 
-	def filter_missing_data (self, gap_threshold, missing_threshold, verbose=False):
+	def filter_missing_data (self, gap_threshold, missing_threshold, verbose=True):
 		""" Wrapper of the MissingFilter class that iterates over multiple Alignment objects """
 
+		self.log_progression.record("Filtering file", len(self.alignment_object_list))
 		for alignment_obj in self.alignment_object_list:
 
 			if verbose == True:
-
-				print ("\rFiltering file %s out of %s" % (self.alignment_object_list.index(alignment_obj)+1,len(self.alignment_object_list)),end="")
+				self.log_progression.progress_bar(self.alignment_object_list.index(alignment_obj))
 
 			alignment_obj.filter_missing_data(gap_threshold=gap_threshold, missing_threshold=missing_threshold)
 
@@ -553,8 +560,7 @@ class AlignmentList (Alignment, Base, MissingFilter):
 		for alignment_obj in self.alignment_object_list:
 
 			if verbose == True:
-
-				print ("\rRemoving taxa", end="")
+				self.log_progression.write("Removing taxa")
 
 			alignment_obj.remove_taxa(taxa_list)
 
