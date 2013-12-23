@@ -150,7 +150,16 @@ class Progression ():
 		self.width = window_size
 
 	def progress_bar (self,position):
+		""" this function requires the record method to be previouly defined, as it will need its attributes. It will print a progress bar with a specified wigth according to the position on the current data structure """
 
+		# If there is a previous mensage in the output, erase it
+		try:
+			self.msg
+			sys.stdout.write('\r' + ' '*len(self.msg))
+		except:
+			pass
+			
+		# The progress bar
 		position_proportion = int((position/self.size)*self.width)
 
 		msg = "\r%s [%s%s] %s%%" % (self.name,"#"*position_proportion,"-"*(self.width-position_proportion),int((position_proportion/self.width)*100))
@@ -160,3 +169,10 @@ class Progression ():
 		# Erase the last mensage
 		if int((position_proportion/self.width)*100) == 100:
 			sys.stdout.write('\r' + ' '*len(msg))
+
+	def write(self,msg):
+		""" This will simply write a provided srting to the terminal """
+
+		self.msg = msg
+
+		print (msg,end="")
