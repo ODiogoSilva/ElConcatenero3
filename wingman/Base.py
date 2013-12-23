@@ -20,6 +20,8 @@
 #  
 #  
 
+import sys
+
 class Base ():
 
 	def autofinder (self, reference_file):
@@ -54,6 +56,11 @@ class Base ():
 		elif len(header.strip().split()) == 2 and header.strip().split()[0].isdigit() and header.strip().split()[1].isdigit():
 			autofind = "phylip"
 			sequence = "".join(file_handle.readline().split()[1:]).strip()
+
+		# Check if there is any sequence. If not, the alignment file has no sequence
+		if sequence.replace("-","") == "":
+			print ("\nAlignment file %s has no sequence or the first sequence is empty. Please check the file." % (reference_file))
+			raise SystemExit
 		
 		# Guessing the genetic code
 		code = self.guess_code (sequence)
@@ -133,3 +140,23 @@ class Base ():
 		difLength = dict((key,value) for key, value in alignment_dic.items() if len(commonSeq) != len(value))
 		if difLength != {}:
 			print ("\nWARNING: Unequal sequence lenght detected in %s" % (current_file))
+
+class Progression ():
+
+	def record (self,name,obj_size,window_size=50):
+
+		self.name = name
+		self.size = obj_size
+		self.width = window_size
+
+	def progress_bar (self,position):
+
+		position_proportion = int((position/self.size)*self.width)
+
+		msg = "\r%s [%s%s] %s%%" % (self.name,"#"*position_proportion,"-"*(self.width-position_proportion),int((position_proportion/self.width)*100))
+
+		print (msg,end="")
+
+		# Erase the last mensage
+		if int((position_proportion/self.width)*100) == 100:
+			sys.stdout.write('\r' + ' '*len(msg))
