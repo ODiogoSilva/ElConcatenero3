@@ -133,7 +133,21 @@ class Base ():
 				raise SystemExit
 
 	def check_sizes (self, alignment_dic, current_file):
-		""" Function to test whether all sequences are of the same size and, if not, which are different """
+		""" This will make two sanity checks of the alignment contained in the alignment_dic object: First, it will check if none of the sequences is empty; If True, it will raise an error informing which taxa have empty sequences. If False, this will also test whether all sequences are of the same size and, if not, which are different """
+
+		# Checking for taxa with empty sequences
+		empty_taxa = []
+		for taxa, seq in alignment_dic.items():
+
+			if seq == "":
+				empty_taxa.append(taxa)
+
+		if empty_taxa != []:
+
+			print ("\nInputError: The following taxa contain empty sequences: %s\nPlease verify and re-run the program. Exiting...\n" % (" ".join(empty_taxa)))
+			raise SystemExit
+
+		# Checking sequence lengths
 		# Determine the most common length 
 		commonSeq = max(set([v for v in alignment_dic.values()]),key=[v for v in alignment_dic.values()].count)
 		# Creates a dictionary with the sequences, and respective length, of different length
