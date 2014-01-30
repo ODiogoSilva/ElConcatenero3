@@ -27,6 +27,10 @@ from wingman.ErrorHandling import *
 from collections import OrderedDict
 import re
 
+### To Do
+# - Create a SequenceSet class for sets of sequences that do not conform to an alignment, i.e. unequal length. This would eliminate the problems of applying methods desgined for alignments to sets of sequences with unequal length and would allows these sets of sequences to have methods of their own.
+# - After creating the SequenceSet class, an additional class should be used to make the triage of files to either the Alignment or SequenceSet classes
+
 class Alignment (Base,MissingFilter):
 
 	def __init__ (self, input_alignment,input_format=None,model_list=None, alignment_name=None, loci_ranges=None):
@@ -90,7 +94,6 @@ class Alignment (Base,MissingFilter):
 		self.alignment = dictionary_obj
 		self.locus_length = len(list(dictionary_obj.values())[0])
 
-		
 	def read_alignment (self, input_alignment, alignment_format, size_check=True):
 		""" The read_alignment method is run when the class is initialized to parse an alignment an set all the basic attributes of the class.
 
@@ -111,7 +114,11 @@ class Alignment (Base,MissingFilter):
 				if line != "":
 					taxa = line.split()[0].replace(" ","")
 					taxa = self.rm_illegal(taxa)
-					sequence = line.split()[1].strip().lower()
+					try:
+						sequence = line.split()[1].strip().lower()
+					except:
+						sequence = ""
+
 					self.alignment[taxa] = sequence
 					
 					## TO DO: Read phylip interleave
@@ -150,6 +157,8 @@ class Alignment (Base,MissingFilter):
 					self.model.append(line.strip())
 
 			self.locus_length = len(list(self.alignment.values())[0])
+
+
 		
 		# Checks the size consistency of the alignment
 		if size_check == True:
