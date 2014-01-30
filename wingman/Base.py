@@ -144,7 +144,7 @@ class Base ():
 
 		if empty_taxa != []:
 
-			print ("\nInputError: The following taxa contain empty sequences: %s\nPlease verify and re-run the program. Exiting...\n" % (" ".join(empty_taxa)))
+			print ("\nInputError: The following taxa contain empty sequences in the file %s: %s\nPlease verify and re-run the program. Exiting...\n" % (current_file," ".join(empty_taxa)))
 			raise SystemExit
 
 		# Checking sequence lengths
