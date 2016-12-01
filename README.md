@@ -1,4 +1,13 @@
+## Note
+
+This repository has been discontinued in favor of the TriFusion software.
+
+TriFusion github: https://github.com/ODiogoSilva/TriFusion
+
+TriFusion webpage: http://odiogosilva.github.io/TriFusion/
+
 ## About PhD_Easy
+
 
 Note: Name under consideration
 
